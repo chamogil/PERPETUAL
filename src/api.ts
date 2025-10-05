@@ -70,24 +70,62 @@ export async function fetchHeaderMetrics(address: string): Promise<HeaderMetrics
   }
 }
 
-// Simplified version for overview - just MCAP and 24h change
+// Simplified version for overview - just MCAP, price and 24h change
 export type CoinOverview = {
   address: string
   marketCap: number | null
+  price: number | null
   priceChange24h: number | null
 }
 
 export async function fetchCoinOverview(address: string): Promise<CoinOverview> {
   const pairs = await fetchDexByTokenAddress(address)
   if (!pairs) {
-    return { address, marketCap: null, priceChange24h: null }
+    return { address, marketCap: null, price: null, priceChange24h: null }
   }
   
   const best = pairs.reduce((a, b) => ( (a?.liquidity?.usd ?? 0) >= (b?.liquidity?.usd ?? 0) ? a : b ))
   const marketCap = best.marketCap ? Number(best.marketCap) : (best.fdv ? Number(best.fdv) : null)
+  const price = best.priceUsd ? Number(best.priceUsd) : null
   const priceChange24h = best.priceChange?.h24 ? Number(best.priceChange.h24) : null
   
-  return { address, marketCap, priceChange24h }
+  return { address, marketCap, price, priceChange24h }
 }
 
+// WETH/USDC pair on Uniswap V3 (high liquidity, reliable ETH/USD proxy)
+const CHAIN_ID = 'ethereum'
+const PAIR_ADDRESS = '0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640'
+
+export async function fetchETHPrice(): Promise<number | null> {
+  try {
+    const url = `${DEX_BASE}/pairs/${CHAIN_ID}/${PAIR_ADDRESS}`
+    const res = await fetch(url, { 
+      headers: { 'accept': 'application/json' } 
+    })
+    
+    if (!res.ok) {
+      console.error('DexScreener API error:', res.status)
+      return null
+    }
+    
+    const data = await res.json()
+    
+    if (!data?.pair?.priceUsd) {
+      console.error('Invalid response structure:', data)
+      return null
+    }
+    
+    const price = Number(data.pair.priceUsd)
+    
+    if (isNaN(price) || price <= 0) {
+      console.error('Invalid price value:', data.pair.priceUsd)
+      return null
+    }
+    
+    return price
+  } catch (error) {
+    console.error('Failed to fetch ETH price from DexScreener:', error)
+    return null
+  }
+}
 

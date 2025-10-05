@@ -5,16 +5,16 @@ export default function Landing() {
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Hero Section - Punk & Minimal */}
-      <div className="relative overflow-hidden border-b border-gray-800">
+      <div className="relative overflow-hidden">
         <div className="relative max-w-[1200px] mx-auto px-6 py-20 text-center">
           {/* Main Title - MASSIVE, BOLD, WHITE */}
           <h1 className="text-6xl md:text-7xl lg:text-9xl font-black mb-6 tracking-tighter text-white">
-            VIBE WHEELING
+            GOOD VIBES CLUB
           </h1>
           
           {/* Tagline - Grungy */}
           <p className="text-grungy text-base md:text-lg mb-8">
-            PERPETUAL STRATEGY HELPER
+            COMMUNITY PERPETUAL STRATEGY SIMULATORS
           </p>
         </div>
       </div>
@@ -27,13 +27,13 @@ export default function Landing() {
         </div>
 
         {/* Hero Cards Grid - PUNK & MINIMAL */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {/* Launch Simulator Card */}
           <Link to="/launch-simulator" className="block group">
             <div className="border-punk glass-card rounded-lg p-10 h-full hover-lift hover-border transition-all duration-300">
               <div className="flex flex-col h-full">
-                <h2 className="text-4xl font-black mb-5 text-white uppercase tracking-tight">
-                  LAUNCH SIMULATOR
+                <h2 className="text-3xl font-black mb-5 text-white uppercase tracking-tight">
+                  NEW TOKEN LAUNCH SIMULATOR
                 </h2>
                 
                 <p className="text-gray-500 mb-8 text-sm leading-relaxed">
@@ -66,12 +66,55 @@ export default function Landing() {
             </div>
           </Link>
 
+          {/* Launch Strategy Planner Card */}
+          <Link to="/launch-strategy-planner" className="block group">
+            <div className="border-punk glass-card rounded-lg p-10 h-full hover-lift hover-border transition-all duration-300">
+              <div className="flex flex-col h-full">
+                <h2 className="text-3xl font-black mb-5 text-white uppercase tracking-tight">
+                  $VIBESTR LAUNCH SIMULATOR
+                </h2>
+                
+                <p className="text-gray-500 mb-8 text-sm leading-relaxed">
+                  Plan multiple entries with real-time tracking and comprehensive exports
+                </p>
+                
+                <ul className="space-y-4 mb-10 flex-grow">
+                  <li className="flex items-start gap-3">
+                    <span className="text-white font-bold">—</span>
+                    <span className="text-xs text-gray-400 uppercase tracking-wide">Multi-Entry Recording</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="text-white font-bold">—</span>
+                    <span className="text-xs text-gray-400 uppercase tracking-wide">Manual & Live Modes</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="text-white font-bold">—</span>
+                    <span className="text-xs text-gray-400 uppercase tracking-wide">CSV & HTML Export</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="text-white font-bold">—</span>
+                    <span className="text-xs text-gray-400 uppercase tracking-wide">Entry Editing System</span>
+                  </li>
+                </ul>
+                
+                <div className="mb-4 text-xs text-gray-500 flex items-center gap-2">
+                  <span>💻</span>
+                  <span>Model developed by <a href="https://x.com/Gabo_Anany" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 transition-colors">@Gabo_Anany</a></span>
+                </div>
+                
+                <button className="btn-punk w-full">
+                  Enter →
+                </button>
+              </div>
+            </div>
+          </Link>
+
           {/* Exit Strategy Card */}
           <Link to="/exit-strategy" className="block group">
             <div className="border-punk glass-card rounded-lg p-10 h-full hover-lift hover-border transition-all duration-300">
               <div className="flex flex-col h-full">
-                <h2 className="text-4xl font-black mb-5 text-white uppercase tracking-tight">
-                  EXIT STRATEGY
+                <h2 className="text-3xl font-black mb-5 text-white uppercase tracking-tight">
+                  PORTFOLIO TRACKER / EXIT STRATEGY
                 </h2>
                 
                 <p className="text-gray-500 mb-8 text-sm leading-relaxed">

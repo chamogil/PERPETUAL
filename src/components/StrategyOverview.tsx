@@ -26,6 +26,18 @@ function formatCompact(value: number): string {
   return `$${value.toFixed(0)}`
 }
 
+function formatPrice(value: number): string {
+  if (value >= 1) {
+    return `$${value.toFixed(2)}`
+  } else if (value >= 0.01) {
+    return `$${value.toFixed(4)}`
+  } else if (value >= 0.0001) {
+    return `$${value.toFixed(6)}`
+  } else {
+    return `$${value.toFixed(8)}`
+  }
+}
+
 type StrategyOverviewProps = {
   onCoinSelect?: (coinId: string) => void
   selectedCoinId?: string
@@ -82,6 +94,9 @@ export default function StrategyOverview({
             >
               <div className="text-xs font-bold mb-2 uppercase tracking-wide">{coin.symbol}</div>
               <div className="text-sm font-semibold mb-1.5">
+                {overview?.price ? formatPrice(overview.price) : '—'}
+              </div>
+              <div className="text-xs text-gray-400 mb-1">
                 {overview?.marketCap ? formatCompact(overview.marketCap) : '—'}
               </div>
               <div className={`text-xs font-bold ${
