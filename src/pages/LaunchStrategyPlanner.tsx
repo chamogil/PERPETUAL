@@ -17,7 +17,6 @@ export default function LaunchStrategyPlanner() {
   const [investment, setInvestment] = useState(1000)
   const [ethPrice, setEthPrice] = useState(4000)
   const [isLiveETH, setIsLiveETH] = useState(false)
-  const [lastETHUpdate, setLastETHUpdate] = useState<Date | null>(null)
   
   // Event timing
   const [eventStartTime, setEventStartTime] = useState<Date | null>(null)
@@ -92,7 +91,6 @@ export default function LaunchStrategyPlanner() {
       if (price) {
         setEthPrice(price)
         setIsLiveETH(true)
-        setLastETHUpdate(new Date())
       }
     }
 
@@ -226,7 +224,6 @@ export default function LaunchStrategyPlanner() {
   // Handler: Start Now button
   const handleStartNow = () => {
     const now = new Date()
-    const offsetTime = new Date(now.getTime() - (now.getTimezoneOffset() * 60000))
     setEventStartTime(now)
     setIsManualMode(false) // Switch to live mode
   }
