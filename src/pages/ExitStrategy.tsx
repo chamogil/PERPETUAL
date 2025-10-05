@@ -241,6 +241,7 @@ export default function ExitStrategy() {
   const marketCap = marketCapUsd ?? 28_500_000
   const holdingsNum = Number(holdings) || 0
   const avgEntryNum = Number(avgEntry) || 0
+  const totalInvested = holdingsNum * avgEntryNum
   const portfolioValue = holdingsNum * currentPrice
   const unrealizedPL = avgEntryNum > 0 ? (currentPrice - avgEntryNum) * holdingsNum : 0
 
@@ -390,7 +391,7 @@ export default function ExitStrategy() {
           {/* Portfolio Card - Horizontal */}
           <div className="glass-card border-punk rounded-lg p-6 no-print">
             <h2 className="text-sm text-gray-500 mb-4 uppercase tracking-wider">Portfolio</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
               <div className="border border-gray-800 rounded-md p-3">
                 <div className="text-xs text-gray-500 mb-2">Holdings</div>
                 <input
@@ -411,6 +412,7 @@ export default function ExitStrategy() {
                   className="w-full bg-transparent border-none outline-none text-base font-medium text-white placeholder-gray-600"
                 />
               </div>
+              <Metric label="Total Invested" value={formatUSD(totalInvested)} />
               <Metric label="Portfolio Value" value={formatUSD(portfolioValue)} />
               <MetricWithColor 
                 label="Unrealized P/L" 
