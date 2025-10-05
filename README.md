@@ -18,8 +18,11 @@ A punk-minimal, utilitarian dashboard for tracking and planning trades on [nftst
 **Recent Updates:**
 - ✅ Rebranded to VIBE WHEELING
 - ✅ Unified punk-minimal color scheme across all pages
-- ✅ Launch Simulator fully functional with 3-slider system
-- ✅ Exit Strategy dashboard with drag-drop reordering
+- ✅ Launch Simulator with 3-slider system + 10% sell tax
+- ✅ Exit Strategy with drag-drop reordering + 10% sell tax
+- ✅ Quick Comparison expanded to 7 entry times (0, 15, 30, 45, 60, 75, 85 min)
+- ✅ Donation section moved to end of landing page
+- ✅ All math verified accurate for nftstrategy.fun tokenomics
 - ✅ Auto-deploys on push via Vercel
 
 ---
@@ -35,20 +38,21 @@ A punk-minimal, utilitarian dashboard for tracking and planning trades on [nftst
 
 ### 2. **Launch Simulator** (`/launch-simulator`)
 - Optimize entry timing for new token launches
-- Accounts for dynamic tax system (95% → 10%)
+- Accounts for dynamic buy tax (95% → 10%) + 10% sell tax
 - 3-slider system:
   - **Entry Minute**: When you buy (0-90 min)
   - **Entry Market Cap**: MCAP when you buy ($50K-$1M)
   - **Exit Market Cap**: Your target ($Entry→$15M)
-- Real-time ROI calculator
-- Quick comparison of different entry times
+- Real-time ROI calculator with accurate tax calculations
+- Quick Comparison: 7 entry times (0, 15, 30, 45, 60, 75, 85 min)
 
 ### 3. **Exit Strategy Dashboard** (`/exit-strategy`)
 - Track portfolio value across 6 strategies
-- Plan exits at custom market cap targets
+- Plan exits at custom market cap targets (accounts for 10% sell tax)
 - Drag-and-drop reorder targets
 - Print/export to PDF
 - Auto-refresh every 30 seconds
+- All proceeds calculated after tax
 
 ---
 
@@ -452,6 +456,21 @@ git push
 - Add custom domain
 - Update DNS records
 - HTTPS automatic
+
+### Analytics & Tracking
+
+**Vercel Analytics (Built-in, Recommended):**
+- Go to your Vercel project dashboard
+- Click "Analytics" tab
+- Enable "Web Analytics" for free
+- View: Page views, visitors, countries, devices
+- Privacy-friendly (no cookies, GDPR compliant)
+
+**Google Analytics 4 (Optional):**
+- More detailed tracking available
+- Requires manual setup in `index.html`
+- Note: GA4 setup was tested but removed to keep deployment simple
+- Stick with Vercel Analytics for best results
 
 ---
 
