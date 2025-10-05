@@ -26,28 +26,6 @@ export default function Landing() {
           <StrategyOverview showTitle={true} />
         </div>
 
-        {/* Donation Section */}
-        <div className="mb-16 text-center">
-          <p className="text-xs text-gray-600 uppercase tracking-wider mb-3">
-            Donations not encouraged but appreciated
-          </p>
-          <div className="inline-flex items-center gap-3 glass-card border-punk rounded-lg px-6 py-3">
-            <span className="text-xs text-gray-500">ETH</span>
-            <code className="text-xs font-mono text-white">
-              0xB41Df8AC75d771180d2EB673A10C9FCD0b8418EF
-            </code>
-            <button
-              onClick={() => {
-                navigator.clipboard.writeText('0xB41Df8AC75d771180d2EB673A10C9FCD0b8418EF')
-              }}
-              className="text-gray-500 hover:text-white transition-colors text-xs"
-              title="Copy address"
-            >
-              Copy
-            </button>
-          </div>
-        </div>
-
         {/* Hero Cards Grid - PUNK & MINIMAL */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* Launch Simulator Card */}
@@ -127,8 +105,30 @@ export default function Landing() {
           </Link>
         </div>
 
+        {/* Donation Section */}
+        <div className="mt-16 mb-8 text-center">
+          <p className="text-xs text-gray-600 uppercase tracking-wider mb-3">
+            Donations not encouraged but appreciated
+          </p>
+          <div className="inline-flex items-center gap-3 glass-card border-punk rounded-lg px-6 py-3">
+            <span className="text-xs text-gray-500">ETH</span>
+            <code className="text-xs font-mono text-white">
+              0xB41Df8AC75d771180d2EB673A10C9FCD0b8418EF
+            </code>
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText('0xB41Df8AC75d771180d2EB673A10C9FCD0b8418EF')
+              }}
+              className="text-gray-500 hover:text-white transition-colors text-xs"
+              title="Copy address"
+            >
+              Copy
+            </button>
+          </div>
+        </div>
+
         {/* Footer */}
-        <div className="mt-16 text-center text-xs text-gray-800">
+        <div className="mt-8 text-center text-xs text-gray-800">
           <p>Data from DexScreener API • Updates every 30s</p>
         </div>
       </div>

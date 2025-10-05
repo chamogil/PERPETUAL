@@ -4,6 +4,24 @@
 
 A punk-minimal, utilitarian dashboard for tracking and planning trades on [nftstrategy.fun](https://www.nftstrategy.fun/) tokens.
 
+🌐 **LIVE:** [https://perpetual-lemon.vercel.app/](https://perpetual-lemon.vercel.app/)  
+📦 **GitHub:** [https://github.com/chamogil/PERPETUAL](https://github.com/chamogil/PERPETUAL)
+
+---
+
+## ✅ Status
+
+**Version:** 1.0.0  
+**Status:** 🟢 Live & Deployed  
+**Last Updated:** October 5, 2025
+
+**Recent Updates:**
+- ✅ Rebranded to VIBE WHEELING
+- ✅ Unified punk-minimal color scheme across all pages
+- ✅ Launch Simulator fully functional with 3-slider system
+- ✅ Exit Strategy dashboard with drag-drop reordering
+- ✅ Auto-deploys on push via Vercel
+
 ---
 
 ## 🎯 What It Does
