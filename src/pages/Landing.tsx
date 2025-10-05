@@ -99,7 +99,7 @@ export default function Landing() {
                 
                 <div className="mb-4 text-xs text-gray-500 flex items-center gap-2">
                   <span>💻</span>
-                  <span>Model developed by <a href="https://x.com/Gabo_Anany" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 transition-colors">@Gabo_Anany</a></span>
+                  <span>Model developed by <a href="https://x.com/Gabo_Anany" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 transition-colors" onClick={(e) => e.stopPropagation()}>@Gabo_Anany</a></span>
                 </div>
                 
                 <button className="btn-punk w-full">
