@@ -1,4 +1,4 @@
-# FLY WHEELING - Perpetual Strategy Helper
+# VIBE WHEELING - Perpetual Strategy Helper
 
 **Your complete toolkit for NFT Strategy tokens**
 
@@ -8,7 +8,7 @@ A punk-minimal, utilitarian dashboard for tracking and planning trades on [nftst
 
 ## 🎯 What It Does
 
-**FLY WHEELING** is a free helper tool with 3 main features:
+**VIBE WHEELING** is a free helper tool with 3 main features:
 
 ### 1. **Landing Page** (`/`)
 - Overview of all 6 NFT Strategy tokens
@@ -399,7 +399,7 @@ git init
 git add .
 
 # Commit
-git commit -m "FLY WHEELING - Perpetual Strategy Helper"
+git commit -m "VIBE WHEELING - Perpetual Strategy Helper"
 ```
 
 **2. Push to GitHub:**
