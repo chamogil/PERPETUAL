@@ -42,17 +42,19 @@ export default function LaunchSimulator() {
 
   const investmentNum = Number(investment) || 0
   const taxRate = calculateTax(entryMinute)
+  const SELL_TAX = 0.10 // 10% sell tax on all nftstrategy.fun tokens
   
   // Entry price based on entry market cap
   const entryPrice = entryMarketCap / TOTAL_SUPPLY
   
-  // Tokens received after tax
+  // Tokens received after buy tax
   const tokensReceived = (investmentNum * (1 - taxRate / 100)) / entryPrice
   const effectiveCost = investmentNum / tokensReceived
   
-  // Exit calculations
+  // Exit calculations (with sell tax)
   const exitPrice = exitMarketCap / TOTAL_SUPPLY
-  const exitValue = tokensReceived * exitPrice
+  const grossExitValue = tokensReceived * exitPrice
+  const exitValue = grossExitValue * (1 - SELL_TAX) // Account for 10% sell tax
   const profit = exitValue - investmentNum
   const roi = (profit / investmentNum) * 100
 
@@ -68,7 +70,7 @@ export default function LaunchSimulator() {
             LAUNCH SIMULATOR
           </h1>
           <p className="text-xs text-gray-600 uppercase tracking-wider">
-            Dynamic Tax System • 95% → 10%
+            Dynamic Buy Tax 95% → 10% • 10% Sell Tax
           </p>
         </div>
 
@@ -232,7 +234,8 @@ export default function LaunchSimulator() {
               const tax = calculateTax(min)
               // Use same entry price for comparison (same entry MCAP assumption)
               const tokens = (investmentNum * (1 - tax / 100)) / entryPrice
-              const value = tokens * exitPrice
+              const grossValue = tokens * exitPrice
+              const value = grossValue * (1 - SELL_TAX) // Account for 10% sell tax
               const p = value - investmentNum
               const r = (p / investmentNum) * 100
               const isCurrent = min === entryMinute

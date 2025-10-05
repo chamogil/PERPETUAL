@@ -261,6 +261,7 @@ export default function ExitStrategy() {
   const exitCalculations = useMemo(() => {
     let remainingTokens = holdingsNum
     let cumulativeProceeds = 0
+    const SELL_TAX = 0.10 // 10% sell tax on all nftstrategy.fun tokens
 
     return exitTargets.map((target) => {
       const targetValueNum = Number(target.targetValue) || 0
@@ -268,7 +269,8 @@ export default function ExitStrategy() {
       const impliedPrice = marketCap > 0 ? (targetMcap / marketCap) * currentPrice : 0
       const percentNum = Number(target.percentToSell) || 0
       const tokensToSell = (percentNum / 100) * remainingTokens
-      const proceeds = tokensToSell * impliedPrice
+      const grossProceeds = tokensToSell * impliedPrice
+      const proceeds = grossProceeds * (1 - SELL_TAX) // Account for 10% sell tax
 
       remainingTokens -= tokensToSell
       cumulativeProceeds += proceeds
@@ -321,6 +323,9 @@ export default function ExitStrategy() {
             <h1 className="text-3xl md:text-4xl font-black mt-3 uppercase tracking-tight">
               EXIT STRATEGY
             </h1>
+            <p className="text-xs text-gray-600 uppercase tracking-wider mt-1">
+              Includes 10% Sell Tax
+            </p>
           </div>
           <div className="flex items-center gap-3">
             <label className="text-xs text-gray-600 uppercase tracking-wider">Coin</label>
@@ -428,7 +433,7 @@ export default function ExitStrategy() {
               <hr className="border-gray-300" />
             </div>
 
-            <div className="flex items-center justify-between mb-4 no-print">
+            <div className="flex items-center justify-between mb-2 no-print">
               <h2 className="text-lg font-medium uppercase tracking-tight">Exit Strategy</h2>
               <div className="flex items-center gap-3">
                 <button
@@ -446,6 +451,9 @@ export default function ExitStrategy() {
                 </button>
               </div>
             </div>
+            <p className="text-xs text-gray-600 mb-4 no-print">
+              All proceeds calculated after 10% sell tax
+            </p>
 
             {exitTargets.length === 0 ? (
               <div className="text-center py-12 text-gray-500 no-print">
