@@ -110,15 +110,15 @@ export default function LaunchSimulator() {
               <input
                 type="range"
                 min="50000"
-                max="1000000"
-                step="10000"
+                max="5000000"
+                step="50000"
                 value={entryMarketCap}
                 onChange={(e) => handleEntryMcapChange(Number(e.target.value))}
                 className="w-full h-2 bg-gray-800 rounded-lg appearance-none cursor-pointer"
               />
               <div className="flex justify-between text-xs text-gray-600 mt-2">
                 <span>$50K</span>
-                <span>$1M</span>
+                <span>$5M</span>
               </div>
             </label>
             <div className="mt-4 pt-4 border-t border-gray-800">

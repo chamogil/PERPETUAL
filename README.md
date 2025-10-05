@@ -20,8 +20,10 @@ A punk-minimal, utilitarian dashboard for tracking and planning trades on [nftst
 - ✅ Unified punk-minimal color scheme across all pages
 - ✅ Launch Simulator with 3-slider system + 10% sell tax
 - ✅ Exit Strategy with drag-drop reordering + 10% sell tax
+- ✅ Portfolio section now shows "Total Invested" metric
 - ✅ Quick Comparison expanded to 7 entry times (0, 15, 30, 45, 60, 75, 85 min)
 - ✅ Donation section moved to end of landing page
+- ✅ Fixed 404 errors on page refresh (vercel.json routing)
 - ✅ All math verified accurate for nftstrategy.fun tokenomics
 - ✅ Auto-deploys on push via Vercel
 
