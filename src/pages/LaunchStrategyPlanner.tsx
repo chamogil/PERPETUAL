@@ -52,6 +52,9 @@ export default function LaunchStrategyPlanner() {
   // Auto-scroll state
   const [userHasScrolled, setUserHasScrolled] = useState(false)
   const tableContainerRef = useRef<HTMLDivElement>(null)
+  
+  // Help modal state
+  const [isHelpOpen, setIsHelpOpen] = useState(false)
 
   // Active minute (manual or live)
   const activeMinute = isManualMode ? manualMinute : currentMinute
@@ -673,10 +676,16 @@ export default function LaunchStrategyPlanner() {
   return (
     <div className="min-h-screen bg-black text-white p-8">
       <div className="max-w-[1600px] mx-auto">
-        <div className="mb-4">
+        <div className="mb-4 flex items-center justify-between">
           <Link to="/launch-simulator" className="text-gray-500 hover:text-white text-xs uppercase tracking-wider transition-colors">
             ← Back to Launch Simulator
           </Link>
+          <button
+            onClick={() => setIsHelpOpen(true)}
+            className="bg-yellow-500 hover:bg-yellow-400 text-black font-bold px-4 py-2 rounded-lg transition text-sm uppercase tracking-wide"
+          >
+            How to Use
+          </button>
         </div>
         <h1 className="text-4xl font-bold text-center mb-8 text-white uppercase tracking-wide">
           Launch Strategy Planner
@@ -1265,6 +1274,129 @@ export default function LaunchStrategyPlanner() {
         </div>
       </div>
     </div>
+
+        {/* Help Modal */}
+        {isHelpOpen && (
+          <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4" onClick={() => setIsHelpOpen(false)}>
+            <div className="glass-card rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-2xl" onClick={(e) => e.stopPropagation()}>
+              {/* Header */}
+              <div className="sticky top-0 bg-black/95 backdrop-blur-sm border-b border-white/10 p-6 flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-yellow-500 uppercase tracking-wide">How to Use</h2>
+                <button
+                  onClick={() => setIsHelpOpen(false)}
+                  className="text-gray-400 hover:text-white text-3xl font-bold transition"
+                >
+                  ×
+                </button>
+              </div>
+
+              {/* Content */}
+              <div className="p-8 space-y-8">
+                {/* Parameters Section */}
+                <section>
+                  <h3 className="text-xl font-bold text-yellow-500 mb-4 uppercase tracking-wide border-b border-white/10 pb-2">Parameters</h3>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <h4 className="text-lg font-semibold text-white mb-2">Investment ($)</h4>
+                      <p className="text-gray-300 leading-relaxed">The dollar amount you're planning to invest at a specific minute. Adjust this to test different investment sizes. The simulation shows how many tokens you'd get after buy tax is deducted.</p>
+                    </div>
+
+                    <div>
+                      <h4 className="text-lg font-semibold text-white mb-2">Market Cap ($)</h4>
+                      <p className="text-gray-300 leading-relaxed">The starting market cap at minute 1 of the launch. Set this to match the expected launch market cap and leave it. This determines the initial token price (MC ÷ 1 billion tokens).</p>
+                    </div>
+
+                    <div>
+                      <h4 className="text-lg font-semibold text-white mb-2">MC +/Min ($)</h4>
+                      <p className="text-gray-300 leading-relaxed mb-2">How much the market cap increases every minute during the 86-minute period. This models the growth rate:</p>
+                      <ul className="list-disc list-inside text-gray-300 space-y-1 ml-4">
+                        <li><span className="font-semibold">$0</span> = flat price (no growth)</li>
+                        <li><span className="font-semibold">$50,000</span> = moderate growth ($50k added per minute)</li>
+                        <li><span className="font-semibold">$100,000+</span> = aggressive growth</li>
+                      </ul>
+                      <p className="text-gray-300 leading-relaxed mt-2">Set this based on how bullish you think the launch will be, then leave it to see the full 86-minute projection.</p>
+                    </div>
+
+                    <div>
+                      <h4 className="text-lg font-semibold text-white mb-2">Token Price ($)</h4>
+                      <p className="text-gray-300 leading-relaxed">Auto-calculated. Shows current token price based on your Market Cap setting. You can't adjust this directly.</p>
+                    </div>
+
+                    <div>
+                      <h4 className="text-lg font-semibold text-white mb-2">ETH Price ($)</h4>
+                      <p className="text-gray-300 leading-relaxed">Live price from DexScreener, updates every 30 seconds. Used to convert all USD values to ETH. You can't adjust this.</p>
+                    </div>
+                  </div>
+                </section>
+
+                {/* Controls Section */}
+                <section>
+                  <h3 className="text-xl font-bold text-yellow-500 mb-4 uppercase tracking-wide border-b border-white/10 pb-2">Controls & Functionality</h3>
+                  
+                  <div className="space-y-4">
+                    <div>
+                      <h4 className="text-lg font-semibold text-white mb-2">Current Minute Slider (Manual Mode)</h4>
+                      <p className="text-gray-300 leading-relaxed">Manually scrub through minutes 0-86 to explore different entry points. The simulation table updates to show what happens if you enter at that specific minute.</p>
+                    </div>
+
+                    <div>
+                      <h4 className="text-lg font-semibold text-white mb-2">Start Now Button</h4>
+                      <p className="text-gray-300 leading-relaxed">Switches to live mode and starts a real-time countdown/timer. The current minute will automatically advance every 60 seconds (or every 3 seconds if 20x speed is enabled). Use this to simulate a live launch in real-time.</p>
+                    </div>
+
+                    <div>
+                      <h4 className="text-lg font-semibold text-white mb-2">Stop Button</h4>
+                      <p className="text-gray-300 leading-relaxed">Stops the live timer and returns to manual mode. Resets the current minute back to 0.</p>
+                    </div>
+
+                    <div>
+                      <h4 className="text-lg font-semibold text-white mb-2">20x Speed Mode</h4>
+                      <p className="text-gray-300 leading-relaxed">Checkbox, only visible in live mode. Accelerates time so the full 86 minutes completes in ~4 minutes 18 seconds. Each real second = 20 simulated seconds.</p>
+                    </div>
+
+                    <div>
+                      <h4 className="text-lg font-semibold text-white mb-2">Record Entry Button</h4>
+                      <p className="text-gray-300 leading-relaxed">Takes a snapshot of your current parameters (investment amount, current minute, market cap, tokens bought, breakeven price) and saves it to the Recorded Entries table. This lets you compare multiple entry scenarios side-by-side.</p>
+                    </div>
+
+                    <div>
+                      <h4 className="text-lg font-semibold text-white mb-2">Recorded Entries Table</h4>
+                      <p className="text-gray-300 leading-relaxed mb-2">Displays all your saved entries with:</p>
+                      <ul className="list-disc list-inside text-gray-300 space-y-1 ml-4">
+                        <li><span className="font-semibold">Edit</span>: Modify investment, minute, or tokens for that entry</li>
+                        <li><span className="font-semibold">Delete</span>: Remove that entry</li>
+                        <li><span className="font-semibold">Clear All</span>: Delete all recorded entries</li>
+                      </ul>
+                      <p className="text-gray-300 leading-relaxed mt-2">The TOTALS row shows your overall breakeven across all entries (properly weighted, not a simple average).</p>
+                    </div>
+
+                    <div>
+                      <h4 className="text-lg font-semibold text-white mb-2">Export to HTML</h4>
+                      <p className="text-gray-300 leading-relaxed">Downloads a beautifully formatted HTML report of your recorded entries with all calculations, totals, and summary statistics. Opens in any browser and can be printed or shared.</p>
+                    </div>
+
+                    <div>
+                      <h4 className="text-lg font-semibold text-white mb-2">Export to CSV</h4>
+                      <p className="text-gray-300 leading-relaxed">Downloads a spreadsheet-compatible CSV file with all your recorded entries, totals, and summary data. Open in Excel, Google Sheets, or any spreadsheet application for further analysis.</p>
+                    </div>
+
+                    <div>
+                      <h4 className="text-lg font-semibold text-white mb-2">86-Minute Simulation Table</h4>
+                      <p className="text-gray-300 leading-relaxed mb-2">Shows the full 86-minute projection based on your current parameters. Each row displays:</p>
+                      <ul className="list-disc list-inside text-gray-300 space-y-1 ml-4">
+                        <li>Buy tax % for that minute</li>
+                        <li>Projected market cap and price</li>
+                        <li>Tokens you'd get with your investment amount</li>
+                        <li>Breakeven price/MC needed to exit profitably (accounting for 10% sell tax)</li>
+                      </ul>
+                    </div>
+                  </div>
+                </section>
+              </div>
+            </div>
+          </div>
+        )}
   </div>
   )
 }
