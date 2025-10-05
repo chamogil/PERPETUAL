@@ -178,8 +178,8 @@ function SortableExitTarget({
 function Metric(props: { label: string; value: string }) {
   const { label, value } = props
   return (
-    <div className="border border-gray-700 rounded-md p-3 bg-gray-800">
-      <div className="text-xs text-gray-400">{label}</div>
+    <div className="border border-gray-800 rounded-md p-3">
+      <div className="text-xs text-gray-500">{label}</div>
       <div className="mt-1 text-base font-medium">{value}</div>
     </div>
   )
@@ -188,8 +188,8 @@ function Metric(props: { label: string; value: string }) {
 function MetricWithColor(props: { label: string; value: string; colorClass?: string }) {
   const { label, value, colorClass = '' } = props
   return (
-    <div className="border border-gray-700 rounded-md p-3 bg-gray-800">
-      <div className="text-xs text-gray-400">{label}</div>
+    <div className="border border-gray-800 rounded-md p-3">
+      <div className="text-xs text-gray-500">{label}</div>
       <div className={`mt-1 text-base font-medium ${colorClass}`}>{value}</div>
     </div>
   )
@@ -323,9 +323,9 @@ export default function ExitStrategy() {
             </h1>
           </div>
           <div className="flex items-center gap-3">
-            <label className="text-xs text-gray-500 uppercase tracking-wider">Coin</label>
+            <label className="text-xs text-gray-600 uppercase tracking-wider">Coin</label>
             <select
-              className="border border-gray-700 rounded-md px-3 py-2 bg-gray-900 text-white text-sm"
+              className="border border-gray-800 rounded-md px-3 py-2 bg-black text-white text-sm hover:border-white transition-colors"
               value={selectedCoinId}
               onChange={(e) => setSelectedCoinId(e.target.value)}
             >
@@ -341,14 +341,14 @@ export default function ExitStrategy() {
         {/* Cards */}
         <div className="space-y-6">
           {/* Header Card - 8 Metrics */}
-          <div className="border border-gray-700 rounded-lg p-6 bg-gray-900 no-print">
+          <div className="glass-card border-punk rounded-lg p-6 no-print">
             <div className="flex items-start justify-between mb-6">
               <div>
-                <div className="text-sm text-gray-400">{selectedCoin.name} • {selectedCoin.symbol} • Ethereum</div>
-                <div className="mt-1 text-xs text-gray-500">{selectedCoin.address.slice(0, 6)}...{selectedCoin.address.slice(-4)}</div>
+                <div className="text-sm text-gray-500">{selectedCoin.name} • {selectedCoin.symbol} • Ethereum</div>
+                <div className="mt-1 text-xs text-gray-600">{selectedCoin.address.slice(0, 6)}...{selectedCoin.address.slice(-4)}</div>
               </div>
               <button
-                className="text-sm border border-gray-700 rounded px-3 py-1 hover:bg-gray-800 transition-colors"
+                className="text-sm border border-gray-800 rounded px-3 py-1 hover:border-white transition-colors"
                 onClick={() => {
                   fetchHeaderMetrics(selectedCoin.address).then((r) => {
                     setPriceUsd(r.priceUsd)
@@ -383,11 +383,11 @@ export default function ExitStrategy() {
           </div>
 
           {/* Portfolio Card - Horizontal */}
-          <div className="border border-gray-700 rounded-lg p-6 bg-gray-900 no-print">
-            <h2 className="text-sm text-gray-400 mb-4 uppercase tracking-wider">Portfolio</h2>
+          <div className="glass-card border-punk rounded-lg p-6 no-print">
+            <h2 className="text-sm text-gray-500 mb-4 uppercase tracking-wider">Portfolio</h2>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <div className="border border-gray-700 rounded-md p-3 bg-gray-800">
-                <div className="text-xs text-gray-400 mb-2">Holdings</div>
+              <div className="border border-gray-800 rounded-md p-3">
+                <div className="text-xs text-gray-500 mb-2">Holdings</div>
                 <input
                   type="number"
                   value={holdings}
@@ -396,8 +396,8 @@ export default function ExitStrategy() {
                   className="w-full bg-transparent border-none outline-none text-base font-medium text-white placeholder-gray-600"
                 />
               </div>
-              <div className="border border-gray-700 rounded-md p-3 bg-gray-800">
-                <div className="text-xs text-gray-400 mb-2">Avg Entry</div>
+              <div className="border border-gray-800 rounded-md p-3">
+                <div className="text-xs text-gray-500 mb-2">Avg Entry</div>
                 <input
                   type="number"
                   value={avgEntry}
@@ -416,7 +416,7 @@ export default function ExitStrategy() {
           </div>
 
           {/* Exit Strategy Card */}
-          <div className="border border-gray-700 rounded-lg p-6 bg-gray-900 print-exit-strategy">
+          <div className="glass-card border-punk rounded-lg p-6 print-exit-strategy">
             {/* Print-only header */}
             <div className="hidden print:block mb-6">
               <h1 className="text-2xl font-bold mb-2">{selectedCoin.name} ({selectedCoin.symbol}) Exit Strategy</h1>
@@ -433,14 +433,14 @@ export default function ExitStrategy() {
               <div className="flex items-center gap-3">
                 <button
                   onClick={handlePrint}
-                  className="flex items-center gap-2 border border-gray-700 rounded px-4 py-2 hover:bg-gray-800 transition-colors text-sm"
+                  className="flex items-center gap-2 border border-gray-800 rounded px-4 py-2 hover:border-white transition-colors text-sm"
                   title="Print or save as PDF"
                 >
                   📄 Print
                 </button>
                 <button
                   onClick={addExitTarget}
-                  className="flex items-center gap-2 border border-gray-700 rounded px-4 py-2 hover:bg-gray-800 transition-colors text-sm"
+                  className="flex items-center gap-2 border border-gray-800 rounded px-4 py-2 hover:border-white transition-colors text-sm"
                 >
                   <span className="text-lg leading-none">+</span> Add Exit Target
                 </button>
