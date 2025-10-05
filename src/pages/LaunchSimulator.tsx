@@ -230,7 +230,7 @@ export default function LaunchSimulator() {
           </p>
           
           <div className="space-y-4">
-            {[0, 30, 60, 85].map((min) => {
+            {[0, 15, 30, 45, 60, 75, 85].map((min) => {
               const tax = calculateTax(min)
               // Use same entry price for comparison (same entry MCAP assumption)
               const tokens = (investmentNum * (1 - tax / 100)) / entryPrice
