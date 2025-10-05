@@ -2,7 +2,6 @@ import { Link } from 'react-router-dom'
 import { useState } from 'react'
 
 // Launch parameters (fixed for v1)
-const LAUNCH_PRICE = 0.0001
 const TOTAL_SUPPLY = 1_000_000_000
 
 function formatCompact(value: number): string {

@@ -18,7 +18,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { COINS, type CoinConfig } from '../components/StrategyOverview'
+import { COINS } from '../components/StrategyOverview'
 
 type ExitTarget = {
   id: string
