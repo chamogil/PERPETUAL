@@ -137,9 +137,9 @@ export default function AllMetrics() {
                       href={pair.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-xs text-blue-400 hover:text-white transition-colors"
+                      className="text-xs text-white hover:text-gray-400 transition-colors uppercase tracking-wider"
                     >
-                      📊 View on DexScreener →
+                      View on DexScreener →
                     </a>
                   </div>
                 )}
