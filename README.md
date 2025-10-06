@@ -13,9 +13,13 @@ A punk-minimal, utilitarian dashboard for tracking and planning trades on [nftst
 
 **Version:** 1.0.0  
 **Status:** 🟢 Live & Deployed  
-**Last Updated:** October 5, 2025
+**Last Updated:** October 6, 2025
 
 **Recent Updates:**
+- ✅ New "All Metrics" page with comprehensive live data
+- ✅ Added GOBSTR (Gobstrategy) support - 7 strategies tracked
+- ✅ Strategies auto-sort by market cap on landing page
+- ✅ Clean monochrome design for metrics page
 - ✅ Rebranded to VIBE WHEELING
 - ✅ Unified punk-minimal color scheme across all pages
 - ✅ Launch Simulator with 3-slider system + 10% sell tax
@@ -31,12 +35,12 @@ A punk-minimal, utilitarian dashboard for tracking and planning trades on [nftst
 
 ## 🎯 What It Does
 
-**VIBE WHEELING** is a free helper tool with 3 main features:
+**VIBE WHEELING** is a free helper tool with 4 main features:
 
 ### 1. **Landing Page** (`/`)
-- Overview of all 6 NFT Strategy tokens
+- Overview of all 7 NFT Strategy tokens (auto-sorted by market cap)
 - Live market cap & 24h % change data
-- Navigate to simulator or exit planner
+- Navigate to simulator, exit planner, or metrics page
 
 ### 2. **Launch Simulator** (`/launch-simulator`)
 - Optimize entry timing for new token launches
@@ -55,6 +59,18 @@ A punk-minimal, utilitarian dashboard for tracking and planning trades on [nftst
 - Print/export to PDF
 - Auto-refresh every 30 seconds
 - All proceeds calculated after tax
+
+### 4. **All Metrics** (`/all-metrics`)
+- Comprehensive live data for all strategy tokens
+- Real-time updates every 30 seconds from DexScreener API
+- Complete metrics including:
+  - Market Cap, FDV, Liquidity
+  - Price changes (5min, 1h, 6h, 24h)
+  - Volume data across all timeframes
+  - Trading activity (buys/sells/ratios)
+  - DEX info and liquidity breakdown
+- Clean monochrome design with color only for price changes
+- Accessible via "VIEW ALL METRICS" button on landing page
 
 ---
 
@@ -149,6 +165,7 @@ pnkstr-dashboard/
 | TOADSTR | ToadzStrategy | `0x92cedfdbce6e87b595e4a529afa2905480368af4` |
 | BIRBSTR | BirbStrategy | `0x6bcba7cd81a5f12c10ca1bf9b36761cc382658e8` |
 | SQUIGSTR | SquiggleStrategy | `0x742fd09cbbeb1ec4e3d6404dfc959a324deb50e6` |
+| GOBSTR | Gobstrategy | `0x5d855d8a3090243fed9bf73999eedfbc2d1dcf21` |
 
 All on **Ethereum** mainnet.
 

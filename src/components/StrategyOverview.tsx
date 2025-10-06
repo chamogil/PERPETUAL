@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { fetchCoinOverview, type CoinOverview } from '../api'
 
 type CoinConfig = {
@@ -15,6 +16,7 @@ const COINS: CoinConfig[] = [
   { id: 'toadstr', name: 'ToadzStrategy', symbol: 'TOADSTR', address: '0x92cedfdbce6e87b595e4a529afa2905480368af4' },
   { id: 'birbstr', name: 'BirbStrategy', symbol: 'BIRBSTR', address: '0x6bcba7cd81a5f12c10ca1bf9b36761cc382658e8' },
   { id: 'squigstr', name: 'SquiggleStrategy', symbol: 'SQUIGSTR', address: '0x742fd09cbbeb1ec4e3d6404dfc959a324deb50e6' },
+  { id: 'gobstr', name: 'Gobstrategy', symbol: 'GOBSTR', address: '0x5d855d8a3090243fed9bf73999eedfbc2d1dcf21' },
 ]
 
 function formatCompact(value: number): string {
@@ -73,13 +75,30 @@ export default function StrategyOverview({
     }
   }, [])
 
+  // Sort coins by market cap (highest first)
+  const sortedCoins = [...COINS].sort((a, b) => {
+    const overviewA = allCoinsOverview.get(a.address)
+    const overviewB = allCoinsOverview.get(b.address)
+    const mcapA = overviewA?.marketCap ?? 0
+    const mcapB = overviewB?.marketCap ?? 0
+    return mcapB - mcapA
+  })
+
   return (
     <div className="no-print">
-      {showTitle && (
-        <h2 className="text-sm text-gray-400 mb-4 uppercase tracking-wider">All Strategies</h2>
-      )}
+      <div className="flex items-center justify-between mb-4">
+        {showTitle && (
+          <h2 className="text-sm text-gray-400 uppercase tracking-wider">All Strategies</h2>
+        )}
+        <Link 
+          to="/all-metrics" 
+          className="btn-punk text-xs px-4 py-2"
+        >
+          VIEW ALL METRICS →
+        </Link>
+      </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-        {COINS.map((coin) => {
+        {sortedCoins.map((coin) => {
           const overview = allCoinsOverview.get(coin.address)
           const isSelected = selectedCoinId === coin.id
           return (

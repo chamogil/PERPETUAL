@@ -9,9 +9,12 @@ export type DexPair = {
   chainId: string
   dexId: string
   url: string
+  pairAddress?: string
+  labels?: string[]
   baseToken: { address: string; name: string; symbol: string }
   quoteToken: { address: string; name: string; symbol: string }
   priceUsd?: string
+  priceNative?: string
   liquidity?: { usd?: number; base?: number; quote?: number }
   fdv?: number
   marketCap?: number
@@ -22,6 +25,14 @@ export type DexPair = {
     h6?: { buys?: number; sells?: number }
     h1?: { buys?: number; sells?: number }
     m5?: { buys?: number; sells?: number }
+  }
+  pairCreatedAt?: number
+  info?: {
+    imageUrl?: string
+    header?: string
+    openGraph?: string
+    websites?: Array<{ label: string; url: string }>
+    socials?: Array<{ type: string; url: string }>
   }
 }
 

@@ -1,5 +1,7 @@
 import type { DexPair, DexScreenerTokenResponse } from './lib'
 
+export type { DexPair }
+
 const DEX_BASE = 'https://api.dexscreener.com/latest/dex'
 
 export async function fetchDexByTokenAddress(address: string): Promise<DexPair[] | null> {

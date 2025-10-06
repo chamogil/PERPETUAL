@@ -21,13 +21,8 @@ export default function Landing() {
 
       {/* Main Content */}
       <div className="max-w-[1200px] mx-auto px-6 pb-16">
-        {/* All Strategies Overview */}
-        <div className="mb-16">
-          <StrategyOverview showTitle={true} />
-        </div>
-
         {/* Hero Cards Grid - PUNK & MINIMAL */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
           {/* Launch Simulator Card */}
           <Link to="/launch-simulator" className="block group">
             <div className="border-punk glass-card rounded-lg p-10 h-full hover-lift hover-border transition-all duration-300">
@@ -146,6 +141,11 @@ export default function Landing() {
               </div>
             </div>
           </Link>
+        </div>
+
+        {/* All Strategies Overview */}
+        <div className="mb-16">
+          <StrategyOverview showTitle={true} />
         </div>
 
         {/* Donation Section */}
