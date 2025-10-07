@@ -341,7 +341,7 @@ export default function LaunchSimulator() {
           
           {mode === 'historical' && (
             <div className="text-xs text-yellow-200 mb-4 pb-4 border-b border-gray-800">
-              Market cap values use average of open and close prices per minute for more accurate entry pricing
+              Market cap = average of open and close prices. Real launches are volatile AF - prices swing wildly within each minute. Use this as a guide, not gospel. This is meant more for educational purposes.
             </div>
           )}
           
