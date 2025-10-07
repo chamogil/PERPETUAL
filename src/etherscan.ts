@@ -237,8 +237,47 @@ async function fetchHistoricalETHPrice(timestamp: number): Promise<number> {
 }
 
 /**
+ * Fetch internal transactions (ETH transfers within contract calls)
+ * This captures ETH received from DEX router swaps
+ * 
+ * @param walletAddress - User's wallet address  
+ * @param startBlock - Starting block number
+ * @param endBlock - Ending block number
+ * @returns Array of internal transactions
+ */
+async function fetchInternalTransactions(
+  walletAddress: string,
+  startBlock: string,
+  endBlock: string
+): Promise<any[]> {
+  try {
+    const url = new URL(ETHERSCAN_BASE_URL)
+    url.searchParams.append('chainid', ETHEREUM_MAINNET_CHAINID)
+    url.searchParams.append('module', 'account')
+    url.searchParams.append('action', 'txlistinternal')
+    url.searchParams.append('address', walletAddress)
+    url.searchParams.append('startblock', startBlock)
+    url.searchParams.append('endblock', endBlock)
+    url.searchParams.append('sort', 'asc')
+    url.searchParams.append('apikey', ETHERSCAN_API_KEY || '')
+
+    const response = await fetch(url.toString())
+    const data = await response.json()
+
+    if (data.status === '0') {
+      return []
+    }
+
+    return data.result || []
+  } catch (error) {
+    console.error('Error fetching internal transactions:', error)
+    return []
+  }
+}
+
+/**
  * Fetch ETH received in a transaction (for sells)
- * Checks if wallet received ETH back in the same transaction
+ * Checks BOTH internal transactions AND WETH transfer events
  * 
  * @param txHash - Transaction hash
  * @param walletAddress - User's wallet address
@@ -330,6 +369,24 @@ export async function calculatePortfolioFromTransfers(
   // Cache for ETH prices by date to avoid redundant API calls
   const ethPriceCache: Map<string, number> = new Map()
 
+  // Fetch internal transactions to capture ETH received from sells
+  const firstBlock = transfers.length > 0 ? transfers[0].blockNumber : '0'
+  const lastBlock = transfers.length > 0 ? transfers[transfers.length - 1].blockNumber : '99999999'
+  
+  console.log(`Fetching internal transactions from block ${firstBlock} to ${lastBlock}...`)
+  const internalTxs = await fetchInternalTransactions(walletAddress, firstBlock, lastBlock)
+  console.log(`Found ${internalTxs.length} internal ETH transfers`)
+  
+  // Build map of txHash -> ETH received (from internal transactions)
+  const ethReceivedByTx = new Map<string, number>()
+  for (const itx of internalTxs) {
+    if (itx.to.toLowerCase() === walletLower && itx.value) {
+      const ethAmount = parseInt(itx.value) / 1e18
+      const existing = ethReceivedByTx.get(itx.hash) || 0
+      ethReceivedByTx.set(itx.hash, existing + ethAmount)
+    }
+  }
+
   // Process each transfer with rate limiting to respect API limits
   for (let i = 0; i < transfers.length; i++) {
     const transfer = transfers[i]
@@ -410,8 +467,13 @@ export async function calculatePortfolioFromTransfers(
       sellCount++
 
       try {
-        // Get ETH received from this sell
-        const ethReceived = await fetchETHReceivedFromSell(transfer.hash, walletAddress)
+        // Check internal transactions first (most common for DEX sells)
+        let ethReceived = ethReceivedByTx.get(transfer.hash) || 0
+        
+        // If no internal tx, try WETH in logs
+        if (ethReceived === 0) {
+          ethReceived = await fetchETHReceivedFromSell(transfer.hash, walletAddress)
+        }
         
         if (ethReceived > 0) {
           // Get historical ETH price (with caching)
