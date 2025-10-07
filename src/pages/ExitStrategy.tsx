@@ -307,10 +307,8 @@ export default function ExitStrategy() {
   const portfolioValue = holdingsNum * currentPrice
   const unrealizedPL = avgEntryNum > 0 ? (currentPrice - avgEntryNum) * holdingsNum : 0
   
-  // Calculate realized P/L from exit targets (cumulative from all planned exits)
-  const realizedPL = exitCalculations.length > 0 
-    ? exitCalculations[exitCalculations.length - 1]?.cumulativeProfitLoss || 0 
-    : 0
+  // Realized P/L comes from actual sell transactions (from Etherscan API)
+  const realizedPL = walletData?.realizedProfitLoss || 0
 
   // Helper: Format target value with smart unit detection
   const formatTargetValue = (mcapUsd: number): { targetValue: string; unit: 'million' | 'billion' } => {

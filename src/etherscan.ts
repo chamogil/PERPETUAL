@@ -62,6 +62,8 @@ export type WalletPortfolioData = {
   totalTokens: number // Net holdings (buys - sells)
   avgEntryPrice: number // Weighted average entry price in USD
   totalInvestedUSD: number // Total USD spent on buys
+  totalReceivedUSD: number // Total USD received from sells
+  realizedProfitLoss: number // Realized P/L from completed sells
   transactionCount: number // Number of transactions
   firstBuyTimestamp: number | null // Timestamp of first purchase
   lastActivityTimestamp: number | null // Timestamp of last activity
@@ -235,19 +237,80 @@ async function fetchHistoricalETHPrice(timestamp: number): Promise<number> {
 }
 
 /**
- * Calculate portfolio data from token transfers with ACCURATE entry prices
+ * Fetch ETH received in a transaction (for sells)
+ * Checks if wallet received ETH back in the same transaction
+ * 
+ * @param txHash - Transaction hash
+ * @param walletAddress - User's wallet address
+ * @returns ETH received by the wallet in this transaction
+ */
+async function fetchETHReceivedFromSell(
+  txHash: string,
+  walletAddress: string
+): Promise<number> {
+  try {
+    const url = new URL(ETHERSCAN_BASE_URL)
+    url.searchParams.append('chainid', ETHEREUM_MAINNET_CHAINID)
+    url.searchParams.append('module', 'proxy')
+    url.searchParams.append('action', 'eth_getTransactionReceipt')
+    url.searchParams.append('txhash', txHash)
+    url.searchParams.append('apikey', ETHERSCAN_API_KEY || '')
+
+    const response = await fetch(url.toString())
+    const data = await response.json()
+
+    if (!data.result || !data.result.logs) {
+      return 0
+    }
+
+    const logs = data.result.logs
+    let totalEthReceived = 0
+    const walletLower = walletAddress.toLowerCase()
+
+    // Check for WETH Transfer events TO the user's wallet
+    for (const log of logs) {
+      if (log.address.toLowerCase() === WETH_CONTRACT_ADDRESS.toLowerCase()) {
+        if (log.topics.length >= 3 && log.topics[0] === TRANSFER_EVENT_TOPIC) {
+          // topics[2] = to address
+          const toAddress = '0x' + log.topics[2].slice(-40)
+          
+          if (toAddress.toLowerCase() === walletLower) {
+            // This is WETH received by the user
+            const amountHex = log.data
+            const amountWei = parseInt(amountHex, 16)
+            const amountEth = amountWei / 1e18
+            totalEthReceived += amountEth
+          }
+        }
+      }
+    }
+
+    return totalEthReceived
+  } catch (error) {
+    console.error(`Error fetching ETH received for ${txHash}:`, error)
+    return 0
+  }
+}
+
+/**
+ * Calculate portfolio data from token transfers with ACCURATE entry prices AND realized P/L
  * 
  * Logic:
  * 1. For each INCOMING transfer (buy):
  *    - Fetch full transaction details to get ETH spent
  *    - Get historical ETH price at that timestamp
  *    - Calculate USD cost = ETH spent × ETH price
- * 2. For OUTGOING transfers (sell): subtract tokens
+ * 2. For OUTGOING transfers (sell):
+ *    - Fetch ETH received from the sell
+ *    - Get historical ETH price at that timestamp
+ *    - Calculate USD received = ETH received × ETH price
+ *    - Calculate cost basis of sold tokens using avg entry
+ *    - Track realized P/L
  * 3. Calculate weighted average entry price
  * 
  * @param transfers - Array of token transfers
  * @param walletAddress - User's wallet address
- * @returns Calculated portfolio data with accurate entry prices
+ * @returns Calculated portfolio data with accurate entry prices and realized P/L
  */
 export async function calculatePortfolioFromTransfers(
   transfers: TokenTransfer[],
@@ -258,7 +321,9 @@ export async function calculatePortfolioFromTransfers(
   let totalTokensBought = 0
   let totalTokensSold = 0
   let totalUSDSpent = 0
+  let totalUSDReceived = 0
   let buyCount = 0
+  let sellCount = 0
   let firstBuyTimestamp: number | null = null
   let lastActivityTimestamp: number | null = null
 
@@ -342,16 +407,57 @@ export async function calculatePortfolioFromTransfers(
     // OUTGOING: This wallet sent tokens TO someone else (sell/send)
     if (fromLower === walletLower) {
       totalTokensSold += tokenAmount
+      sellCount++
+
+      try {
+        // Get ETH received from this sell
+        const ethReceived = await fetchETHReceivedFromSell(transfer.hash, walletAddress)
+        
+        if (ethReceived > 0) {
+          // Get historical ETH price (with caching)
+          const dateKey = new Date(timestamp * 1000).toDateString()
+          let ethPriceUSD: number
+          
+          if (ethPriceCache.has(dateKey)) {
+            ethPriceUSD = ethPriceCache.get(dateKey)!
+          } else {
+            ethPriceUSD = await fetchHistoricalETHPrice(timestamp)
+            ethPriceCache.set(dateKey, ethPriceUSD)
+            
+            // Rate limiting: wait 300ms between CoinGecko calls
+            if (i < transfers.length - 1) {
+              await new Promise(resolve => setTimeout(resolve, 300))
+            }
+          }
+          
+          // Calculate USD received
+          const usdReceived = ethReceived * ethPriceUSD
+          totalUSDReceived += usdReceived
+          
+          console.log(`Sell ${sellCount}: ${tokenAmount.toFixed(2)} tokens for ${ethReceived.toFixed(4)} ETH ($${usdReceived.toFixed(2)} at $${ethPriceUSD.toFixed(2)}/ETH)`)
+        } else {
+          console.log(`Sell ${sellCount}: ${tokenAmount.toFixed(2)} tokens - Unable to determine proceeds (might be transfer/gift)`)
+        }
+      } catch (error) {
+        console.error(`Error processing sell transaction ${transfer.hash}:`, error)
+      }
     }
   }
 
   const netTokens = totalTokensBought - totalTokensSold
   const avgEntryPrice = totalTokensBought > 0 ? totalUSDSpent / totalTokensBought : 0
+  
+  // Calculate realized P/L
+  // For sold tokens: compare what we received vs what we spent (cost basis)
+  const costBasisOfSoldTokens = totalTokensSold * avgEntryPrice
+  const realizedProfitLoss = totalUSDReceived - costBasisOfSoldTokens
 
   return {
     totalTokens: netTokens,
     avgEntryPrice,
     totalInvestedUSD: totalUSDSpent,
+    totalReceivedUSD: totalUSDReceived,
+    realizedProfitLoss,
     transactionCount: transfers.length,
     firstBuyTimestamp,
     lastActivityTimestamp,
@@ -380,6 +486,8 @@ export async function fetchWalletPortfolio(
         totalTokens: 0,
         avgEntryPrice: 0,
         totalInvestedUSD: 0,
+        totalReceivedUSD: 0,
+        realizedProfitLoss: 0,
         transactionCount: 0,
         firstBuyTimestamp: null,
         lastActivityTimestamp: null,
