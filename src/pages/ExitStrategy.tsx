@@ -233,6 +233,7 @@ export default function ExitStrategy() {
   })
   const [isLoadingWallet, setIsLoadingWallet] = useState<boolean>(false)
   const [walletError, setWalletError] = useState<string>('')
+  const [walletPortfolioData, setWalletPortfolioData] = useState<Awaited<ReturnType<typeof fetchWalletPortfolio>> | null>(null)
 
   // Target MCAP for custom exit strategies
   const [targetMcapValue, setTargetMcapValue] = useState<string>('')
@@ -281,6 +282,7 @@ export default function ExitStrategy() {
     setHoldings('')
     setAvgEntry('')
     setExitTargets([])
+    setWalletPortfolioData(null) // Clear wallet data too
   }, [selectedCoinId])
 
   useEffect(() => {
@@ -308,7 +310,7 @@ export default function ExitStrategy() {
   const unrealizedPL = avgEntryNum > 0 ? (currentPrice - avgEntryNum) * holdingsNum : 0
   
   // Realized P/L comes from actual sell transactions (from Etherscan API)
-  const realizedPL = walletData?.realizedProfitLoss || 0
+  const realizedPL = walletPortfolioData?.realizedProfitLoss || 0
 
   // Helper: Format target value with smart unit detection
   const formatTargetValue = (mcapUsd: number): { targetValue: string; unit: 'million' | 'billion' } => {
@@ -493,6 +495,9 @@ export default function ExitStrategy() {
       // Auto-populate holdings and avgEntry
       setHoldings(portfolioData.totalTokens.toFixed(0))
       setAvgEntry(portfolioData.avgEntryPrice.toFixed(8))
+      
+      // Save portfolio data for realized P/L
+      setWalletPortfolioData(portfolioData)
 
       setIsLoadingWallet(false)
     } catch (error) {
