@@ -46,8 +46,6 @@ const POOL_CONFIG: Record<string, { symbol: string; poolId: string; launchDate: 
   },
 }
 
-const TOTAL_SUPPLY = 1_000_000_000 // All strategy tokens have 1 billion supply
-
 // TypeScript interfaces
 export interface HistoricalDataPoint {
   minute: number        // 0-89 (minutes from launch)
