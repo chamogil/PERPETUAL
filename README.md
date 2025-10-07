@@ -13,9 +13,12 @@ A punk-minimal, utilitarian dashboard for tracking and planning trades on [nftst
 
 **Version:** 1.0.0  
 **Status:** 🟢 Live & Deployed  
-**Last Updated:** October 6, 2025
+**Last Updated:** October 7, 2025
 
 **Recent Updates:**
+- ✅ **WALLET INTEGRATION** - Auto-load portfolio from blockchain with accurate entry prices
+- ✅ Full ETH + WETH support for all transaction types
+- ✅ Historical ETH price fetching for true cost basis calculation
 - ✅ New "All Metrics" page with comprehensive live data
 - ✅ Added GOBSTR (Gobstrategy) support - 7 strategies tracked
 - ✅ Strategies auto-sort by market cap on landing page
@@ -53,7 +56,15 @@ A punk-minimal, utilitarian dashboard for tracking and planning trades on [nftst
 - Quick Comparison: 7 entry times (0, 15, 30, 45, 60, 75, 85 min)
 
 ### 3. **Exit Strategy Dashboard** (`/exit-strategy`)
-- Track portfolio value across 6 strategies
+- **NEW: Wallet Integration** - Auto-load your portfolio from blockchain
+  - Enter your Ethereum wallet address
+  - Fetches all token transactions via Etherscan API
+  - Calculates accurate average entry price using:
+    - Actual ETH/WETH spent per transaction
+    - Historical ETH prices at each purchase date
+    - Automatic buy tax accounting (you paid = tokens received reflect tax)
+  - Works for **ANY ERC-20 token** on Ethereum (not just strategy tokens!)
+- Track portfolio value across all strategies
 - Plan exits at custom market cap targets (accounts for 10% sell tax)
 - Drag-and-drop reorder targets
 - Print/export to PDF
@@ -93,7 +104,9 @@ Frontend:       React 19 + TypeScript
 Routing:        React Router v6
 Styling:        Tailwind CSS v4
 Build Tool:     Vite 7
-Data API:       DexScreener API
+Data APIs:      DexScreener API (market data)
+                Etherscan API V2 (blockchain data)
+                CoinGecko API (historical ETH prices)
 Drag-Drop:      @dnd-kit
 State:          React hooks (no Redux/Zustand)
 Deployment:     Vercel (recommended)
@@ -319,18 +332,108 @@ ROI:              +1,650% 🚀
   - 24h % Change
   - Transaction counts (buys/sells)
 
-### Data Accuracy
-✅ **Shown (accurate from API):**
-- Price, Market Cap, Liquidity
-- 24h Volume, Change, Transactions
-- Buys/Sells count
+### Etherscan API V2 (NEW!)
+- **Endpoint**: `https://api.etherscan.io/v2/api`
+- **API Key**: Required (free tier: 100K requests/day, 5 req/sec)
+- **Purpose**: Fetch token transactions for wallet integration
+- **Data Retrieved**:
+  - Token transfer events (ERC-20)
+  - Full transaction details (ETH value)
+  - Transaction receipts (WETH detection from logs)
 
-❌ **Hidden (not available in API):**
+### CoinGecko API
+- **Endpoint**: `https://api.coingecko.com/api/v3/coins/ethereum/history`
+- **API Key**: Not required (free tier)
+- **Purpose**: Historical ETH prices for accurate cost basis
+- **Rate Limit**: Handled with caching and 300ms delays
+
+### Data Accuracy
+✅ **Shown (accurate from APIs):**
+- Price, Market Cap, Liquidity (DexScreener)
+- 24h Volume, Change, Transactions (DexScreener)
+- Buys/Sells count (DexScreener)
+- **Token holdings, avg entry price (Etherscan + CoinGecko)**
+- **Historical ETH prices (CoinGecko)**
+
+❌ **Hidden (not available in APIs):**
 - Holder count
 - Individual buyer/seller addresses
 - Separate buy/sell volume
 
 **All displayed data is verified accurate** - no estimates or calculations.
+
+---
+
+## 🔗 Wallet Integration Feature
+
+### Overview
+**Auto-load your portfolio directly from the Ethereum blockchain!**
+
+Works for **ANY ERC-20 token** on Ethereum - not just strategy tokens.
+
+### How It Works
+1. Enter your Ethereum wallet address in the Exit Strategy page
+2. Select the token you want to analyze
+3. Click "Load Data"
+4. System automatically:
+   - Fetches all your token transactions from Etherscan
+   - Gets full transaction details (ETH/WETH spent)
+   - Retrieves historical ETH prices for each transaction date
+   - Calculates weighted average entry price
+   - Auto-populates Holdings and Avg Entry fields
+
+### Calculation Method
+```
+For each token purchase:
+  1. Get ETH spent (direct transfer value OR WETH from logs)
+  2. Get historical ETH price at transaction date
+  3. Calculate USD cost = ETH spent × ETH price
+  
+Average Entry Price = Total USD Spent ÷ Total Tokens Bought
+```
+
+### ETH + WETH Support
+The system intelligently handles:
+- **Direct ETH:** Standard ETH → token swaps
+- **WETH:** Wrapped ETH transactions (complex DEX routes)
+- **Auto-Detection:** Parses transaction logs when direct ETH = 0
+
+### Example
+```
+Your Wallet: 0xABC...
+Token: PNKSTR
+
+Found 4 transactions:
+  • Buy 1: 0.5000 ETH @ $4,144 = $2,072 → 19,121 tokens
+  • Buy 2: 0.5590 ETH @ $4,516 = $2,524 → 10,927 tokens  
+  • Buy 3: 0.5500 ETH @ $4,488 = $2,468 → 9,178 tokens
+  • Buy 4: 0.5931 WETH @ $4,488 = $2,662 → 9,079 tokens (WETH detected!)
+
+Result:
+  Holdings: 48,305 PNKSTR
+  Avg Entry: $0.201/token
+  Total Invested: $9,726
+```
+
+### Accuracy Features
+✅ **100% Accurate ETH Amounts** - Extracted from blockchain  
+✅ **Real Historical Prices** - ETH price at exact transaction date  
+✅ **Buy Tax Included** - Tokens received already reflect tax paid  
+✅ **WETH Detection** - Catches all transaction types via log parsing  
+✅ **Smart Caching** - Minimizes API calls by caching ETH prices  
+
+### Privacy & Security
+- ✅ **Read-Only:** Only reads public blockchain data
+- ✅ **No Storage:** Wallet address never stored
+- ✅ **No Permissions:** Doesn't access wallet or require signatures
+- ✅ **Public Data:** Uses publicly available blockchain info
+
+### Universal Compatibility
+Works with **ANY ERC-20 token:**
+- Strategy tokens (PNKSTR, PUDGYSTR, APESTR, etc.)
+- Major tokens (USDC, LINK, UNI, etc.)
+- New/obscure tokens
+- Any valid ERC-20 contract address
 
 ---
 

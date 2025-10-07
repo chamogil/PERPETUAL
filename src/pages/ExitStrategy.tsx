@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useEffect, useMemo, useState } from 'react'
 import { fetchHeaderMetrics } from '../api'
+import { fetchWalletPortfolio } from '../etherscan'
 import {
   DndContext,
   closestCenter,
@@ -200,6 +201,11 @@ export default function ExitStrategy() {
   const [holdings, setHoldings] = useState<string>('')
   const [avgEntry, setAvgEntry] = useState<string>('')
   const [exitTargets, setExitTargets] = useState<ExitTarget[]>([])
+  
+  // Wallet address input
+  const [walletAddress, setWalletAddress] = useState<string>('')
+  const [isLoadingWallet, setIsLoadingWallet] = useState<boolean>(false)
+  const [walletError, setWalletError] = useState<string>('')
 
   const selectedCoin = useMemo(() => COINS.find((c) => c.id === selectedCoinId)!, [selectedCoinId])
 
@@ -287,6 +293,47 @@ export default function ExitStrategy() {
       }
     })
   }, [exitTargets, holdingsNum, currentPrice, marketCap])
+
+  // Load wallet portfolio data from Etherscan
+  const loadWalletData = async () => {
+    // Validate wallet address
+    if (!walletAddress || !walletAddress.startsWith('0x') || walletAddress.length !== 42) {
+      setWalletError('Invalid Ethereum address. Must be 42 characters starting with 0x.')
+      return
+    }
+
+    setWalletError('')
+    setIsLoadingWallet(true)
+
+    try {
+      const portfolioData = await fetchWalletPortfolio(
+        walletAddress,
+        selectedCoin.address
+      )
+
+      if (!portfolioData) {
+        setWalletError('Failed to fetch wallet data. Please try again.')
+        setIsLoadingWallet(false)
+        return
+      }
+
+      if (portfolioData.transactionCount === 0) {
+        setWalletError('No transactions found for this wallet and token.')
+        setIsLoadingWallet(false)
+        return
+      }
+
+      // Auto-populate holdings and avgEntry
+      setHoldings(portfolioData.totalTokens.toFixed(0))
+      setAvgEntry(portfolioData.avgEntryPrice.toFixed(8))
+
+      setIsLoadingWallet(false)
+    } catch (error) {
+      console.error('Error loading wallet data:', error)
+      setWalletError('An error occurred while fetching wallet data.')
+      setIsLoadingWallet(false)
+    }
+  }
 
   const handlePrint = () => {
     window.print()
@@ -391,6 +438,37 @@ export default function ExitStrategy() {
           {/* Portfolio Card - Horizontal */}
           <div className="glass-card border-punk rounded-lg p-6 no-print">
             <h2 className="text-sm text-gray-500 mb-4 uppercase tracking-wider">Portfolio</h2>
+            
+            {/* Wallet Address Input - Auto-populate from blockchain */}
+            <div className="mb-6 pb-6 border-b border-gray-800">
+              <div className="text-xs text-gray-400 mb-3 uppercase tracking-wider">
+                Auto-Load from Wallet (Optional)
+              </div>
+              <div className="flex gap-3">
+                <input
+                  type="text"
+                  value={walletAddress}
+                  onChange={(e) => setWalletAddress(e.target.value)}
+                  placeholder="Enter your Ethereum address (0x...)"
+                  className="flex-1 border border-gray-700 rounded-md px-4 py-2 bg-gray-900 text-white placeholder-gray-600 text-sm"
+                />
+                <button
+                  onClick={loadWalletData}
+                  disabled={isLoadingWallet}
+                  className="border border-gray-800 rounded-md px-6 py-2 hover:border-white transition-colors text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isLoadingWallet ? 'Loading...' : 'Load Data'}
+                </button>
+              </div>
+              {walletError && (
+                <div className="mt-2 text-xs text-red-400">{walletError}</div>
+              )}
+              <div className="mt-2 text-xs text-gray-600">
+                Fetches your on-chain data for {selectedCoin.symbol} from Etherscan
+              </div>
+            </div>
+
+            {/* Portfolio Inputs & Metrics */}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
               <div className="border border-gray-800 rounded-md p-3">
                 <div className="text-xs text-gray-500 mb-2">Holdings</div>
