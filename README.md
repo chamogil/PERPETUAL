@@ -16,6 +16,10 @@ A punk-minimal, utilitarian dashboard for tracking and planning trades on [nftst
 **Last Updated:** October 7, 2025
 
 **Recent Updates:**
+- ✅ **EXIT STRATEGY PRESETS** - One-click Conservative/Balanced/Risky strategy templates
+- ✅ **CUSTOM TARGET MCAP** - Set your ultimate exit goal, system spreads targets evenly
+- ✅ **PROFIT/LOSS TRACKING** - Real-time P/L with green/red color coding per exit
+- ✅ **DATA PERSISTENCE** - Auto-save all data to localStorage (survives refresh)
 - ✅ **WALLET INTEGRATION** - Auto-load portfolio from blockchain with accurate entry prices
 - ✅ Full ETH + WETH support for all transaction types
 - ✅ Historical ETH price fetching for true cost basis calculation
@@ -56,7 +60,24 @@ A punk-minimal, utilitarian dashboard for tracking and planning trades on [nftst
 - Quick Comparison: 7 entry times (0, 15, 30, 45, 60, 75, 85 min)
 
 ### 3. **Exit Strategy Dashboard** (`/exit-strategy`)
-- **NEW: Wallet Integration** - Auto-load your portfolio from blockchain
+- **NEW: Preset Strategy Templates** - One-click exit planning
+  - Conservative: 2x→10x (front-loaded profits)
+  - Balanced: 2x→20x (even distribution)
+  - Risky: 5x→50x (back-loaded, let winners run)
+  - Smart math ensures 100% exit (no accidental moon bags)
+- **NEW: Custom Target MCAP** - Set your ultimate goal
+  - Enter target (e.g., "$500M")
+  - System spreads 4 exits evenly to your target
+  - Or leave blank for default multipliers
+- **NEW: Profit/Loss Tracking** - Real-time P/L display
+  - Green for profits, red for losses
+  - Per-exit and cumulative P/L
+  - Works in bear markets (target < current)
+- **NEW: Data Persistence** - Auto-saves everything
+  - Holdings, entry price, all targets
+  - Survives page refresh
+  - "Clear" button to reset
+- **Wallet Integration** - Auto-load your portfolio from blockchain
   - Enter your Ethereum wallet address
   - Fetches all token transactions via Etherscan API
   - Calculates accurate average entry price using:
@@ -741,13 +762,96 @@ TOTAL_SUPPLY = 1,000,000,000 tokens
 ## 🎯 Exit Strategy Features
 
 ### Portfolio Calculator
-- Track holdings across all 6 strategies
+- Track holdings across all 7 strategies
 - Calculate portfolio value at current price
 - Show unrealized P/L vs average entry
 - Real-time updates
+- **Total Invested** metric for cost basis tracking
+
+### NEW: Preset Exit Strategy Templates 🎉
+One-click strategy generation with smart percentages that result in 100% exit:
+
+**Conservative Strategy** (Take Profits Early)
+- Default targets: 2x, 3x, 5x, 10x current MCAP
+- Exit distribution: 40%, 30%, 20%, 10% of total position
+- Philosophy: Front-loaded, secure profits early, reduce risk
+
+**Balanced Strategy** (Steady Growth)
+- Default targets: 2x, 5x, 10x, 20x current MCAP
+- Exit distribution: 25%, 25%, 25%, 25% of total position
+- Philosophy: Even split across all targets
+
+**Risky Strategy** (Let It Ride)
+- Default targets: 5x, 10x, 25x, 50x current MCAP
+- Exit distribution: 10%, 20%, 30%, 40% of total position
+- Philosophy: Back-loaded, maximize upside potential
+
+**Features:**
+- ✅ Calculates proper "% of remaining" to achieve full exit (no moon bag unless desired)
+- ✅ Instant population of all targets with market caps and percentages
+- ✅ Fully editable after generation
+- ✅ Works with custom target MCAP (see below)
+
+### NEW: Custom Target MCAP 🎯
+Set your ultimate exit goal and let the system spread targets evenly:
+
+**How it works:**
+1. Enter target MCAP (e.g., "500 Million" or "1 Billion")
+2. Choose strategy (Conservative/Balanced/Risky)
+3. System generates 4 evenly-spaced targets from current → target
+4. Exit percentages match your chosen strategy
+
+**Example:**
+- Current MCAP: $28.5M
+- Your Target: $500M
+- Click "Conservative" → Generates: $146M, $264M, $382M, $500M
+- Leave blank to use default multipliers (2x, 5x, 10x, etc.)
+
+### NEW: Profit/Loss Calculations 💰
+Real-time P/L tracking with color-coded display:
+
+**Per Target:**
+- 🟢 **Green** for profits (`+$X,XXX`)
+- 🔴 **Red** for losses (`-$X,XXX`)
+- Shows individual P/L per exit
+- Shows cumulative P/L running total
+
+**Calculation:**
+```
+Cost Basis = Tokens Sold × Avg Entry Price
+Proceeds = Tokens Sold × Implied Price (after 10% sell tax)
+P/L = Proceeds - Cost Basis
+```
+
+**Summary Footer:**
+- Total Proceeds
+- Total Profit/Loss (color-coded)
+- Tokens Remaining
+
+**Bear Market Support:**
+- Works even when target MCAP < current MCAP
+- Shows losses in red to visualize downside scenarios
+- Helps with stop-loss planning
+
+### NEW: Data Persistence 💾
+All data automatically saved to browser localStorage:
+
+**What's Saved:**
+- Holdings & Average Entry
+- All exit targets (including order)
+- Selected coin
+- Wallet address
+- Custom target MCAP
+
+**Features:**
+- ✅ Auto-saves on every change
+- ✅ Survives page refresh
+- ✅ Survives browser restart
+- ✅ No server needed - 100% client-side
+- ✅ "Clear" button to reset everything
 
 ### Dynamic Exit Targets
-- **Add targets** with "+" button
+- **Add targets manually** with "+" button
 - **Input format**: Number + Million/Billion toggle
   - Example: "37" + "Million" = $37M target
   - Example: "2.5" + "Billion" = $2.5B target
@@ -755,9 +859,10 @@ TOTAL_SUPPLY = 1,000,000,000 tokens
 - **Auto-calculated**:
   - Implied price (what price will be at that MCAP)
   - Tokens to sell (based on percentage)
-  - Proceeds (USD)
+  - Proceeds (USD after 10% tax)
+  - Profit/Loss (color-coded)
   - Remaining tokens (running total)
-  - Cumulative proceeds (running total)
+  - Cumulative P/L (running total)
 
 ### Drag-Drop Reordering
 - Powered by @dnd-kit library

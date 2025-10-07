@@ -150,7 +150,7 @@ function SortableExitTarget({
       </div>
 
       {/* Calculated Values */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 text-xs">
+      <div className="grid grid-cols-2 sm:grid-cols-6 gap-3 text-xs">
         <div>
           <div className="text-gray-500">Implied Price</div>
           <div className="font-medium mt-0.5">{formatPrice(calc?.impliedPrice || 0)}</div>
@@ -164,12 +164,20 @@ function SortableExitTarget({
           <div className="font-medium mt-0.5">{formatUSD(calc?.proceeds || 0)}</div>
         </div>
         <div>
+          <div className="text-gray-500">P/L</div>
+          <div className={`font-medium mt-0.5 ${calc?.profitLoss >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+            {calc?.profitLoss >= 0 ? '+' : ''}{formatUSD(calc?.profitLoss || 0)}
+          </div>
+        </div>
+        <div>
           <div className="text-gray-500">Remaining</div>
           <div className="font-medium mt-0.5">{formatNumber(calc?.remainingTokens || 0)}</div>
         </div>
         <div>
-          <div className="text-gray-500">Cumulative</div>
-          <div className="font-medium mt-0.5">{formatUSD(calc?.cumulativeProceeds || 0)}</div>
+          <div className="text-gray-500">Cumulative P/L</div>
+          <div className={`font-medium mt-0.5 ${calc?.cumulativeProfitLoss >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+            {calc?.cumulativeProfitLoss >= 0 ? '+' : ''}{formatUSD(calc?.cumulativeProfitLoss || 0)}
+          </div>
         </div>
       </div>
     </div>
@@ -196,16 +204,39 @@ function MetricWithColor(props: { label: string; value: string; colorClass?: str
   )
 }
 
+// localStorage keys
+const STORAGE_KEY_SELECTED_COIN = 'exitStrategy_selectedCoin'
+const STORAGE_KEY_HOLDINGS = 'exitStrategy_holdings'
+const STORAGE_KEY_AVG_ENTRY = 'exitStrategy_avgEntry'
+const STORAGE_KEY_EXIT_TARGETS = 'exitStrategy_exitTargets'
+const STORAGE_KEY_WALLET_ADDRESS = 'exitStrategy_walletAddress'
+
 export default function ExitStrategy() {
-  const [selectedCoinId, setSelectedCoinId] = useState<string>('pnkstr')
-  const [holdings, setHoldings] = useState<string>('')
-  const [avgEntry, setAvgEntry] = useState<string>('')
-  const [exitTargets, setExitTargets] = useState<ExitTarget[]>([])
+  // Load persisted data from localStorage
+  const [selectedCoinId, setSelectedCoinId] = useState<string>(() => {
+    return localStorage.getItem(STORAGE_KEY_SELECTED_COIN) || 'pnkstr'
+  })
+  const [holdings, setHoldings] = useState<string>(() => {
+    return localStorage.getItem(STORAGE_KEY_HOLDINGS) || ''
+  })
+  const [avgEntry, setAvgEntry] = useState<string>(() => {
+    return localStorage.getItem(STORAGE_KEY_AVG_ENTRY) || ''
+  })
+  const [exitTargets, setExitTargets] = useState<ExitTarget[]>(() => {
+    const saved = localStorage.getItem(STORAGE_KEY_EXIT_TARGETS)
+    return saved ? JSON.parse(saved) : []
+  })
   
   // Wallet address input
-  const [walletAddress, setWalletAddress] = useState<string>('')
+  const [walletAddress, setWalletAddress] = useState<string>(() => {
+    return localStorage.getItem(STORAGE_KEY_WALLET_ADDRESS) || ''
+  })
   const [isLoadingWallet, setIsLoadingWallet] = useState<boolean>(false)
   const [walletError, setWalletError] = useState<string>('')
+
+  // Target MCAP for custom exit strategies
+  const [targetMcapValue, setTargetMcapValue] = useState<string>('')
+  const [targetMcapUnit, setTargetMcapUnit] = useState<'million' | 'billion'>('million')
 
   const selectedCoin = useMemo(() => COINS.find((c) => c.id === selectedCoinId)!, [selectedCoinId])
 
@@ -243,6 +274,27 @@ export default function ExitStrategy() {
     }
   }, [selectedCoin.address])
 
+  // Persist data to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY_SELECTED_COIN, selectedCoinId)
+  }, [selectedCoinId])
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY_HOLDINGS, holdings)
+  }, [holdings])
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY_AVG_ENTRY, avgEntry)
+  }, [avgEntry])
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY_EXIT_TARGETS, JSON.stringify(exitTargets))
+  }, [exitTargets])
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY_WALLET_ADDRESS, walletAddress)
+  }, [walletAddress])
+
   const currentPrice = priceUsd ?? 0.2851
   const marketCap = marketCapUsd ?? 28_500_000
   const holdingsNum = Number(holdings) || 0
@@ -250,6 +302,106 @@ export default function ExitStrategy() {
   const totalInvested = holdingsNum * avgEntryNum
   const portfolioValue = holdingsNum * currentPrice
   const unrealizedPL = avgEntryNum > 0 ? (currentPrice - avgEntryNum) * holdingsNum : 0
+
+  // Helper: Format target value with smart unit detection
+  const formatTargetValue = (mcapUsd: number): { targetValue: string; unit: 'million' | 'billion' } => {
+    if (mcapUsd >= 1_000_000_000) {
+      return { targetValue: (mcapUsd / 1_000_000_000).toFixed(1), unit: 'billion' }
+    }
+    return { targetValue: (mcapUsd / 1_000_000).toFixed(1), unit: 'million' }
+  }
+
+  // Helper: Calculate evenly spaced targets between current and target MCAP
+  const calculateEvenTargets = (finalMcap: number): number[] => {
+    const currentMcap = marketCap
+    const step = (finalMcap - currentMcap) / 4
+    return [
+      currentMcap + step,
+      currentMcap + step * 2,
+      currentMcap + step * 3,
+      finalMcap,
+    ]
+  }
+
+  // Preset strategy generators
+  // These calculate the correct "% of remaining" to achieve full exit
+  const generateConservativeStrategy = () => {
+    const currentMcap = marketCap
+    
+    // Check if user entered a target MCAP
+    let mcapTargets: number[]
+    if (targetMcapValue) {
+      const targetMcap = targetMcapUnit === 'billion' 
+        ? Number(targetMcapValue) * 1_000_000_000 
+        : Number(targetMcapValue) * 1_000_000
+      mcapTargets = calculateEvenTargets(targetMcap)
+    } else {
+      // Use default multipliers
+      mcapTargets = [currentMcap * 2, currentMcap * 3, currentMcap * 5, currentMcap * 10]
+    }
+
+    // Goal: Exit 40%, 30%, 20%, 10% of TOTAL (100% complete exit)
+    // Calculation: 40% of 100, then 50% of 60, then 66.67% of 30, then 100% of 10
+    const targets: ExitTarget[] = [
+      { ...formatTargetValue(mcapTargets[0]), id: Date.now().toString() + '-1', percentToSell: '40' },
+      { ...formatTargetValue(mcapTargets[1]), id: Date.now().toString() + '-2', percentToSell: '50' },
+      { ...formatTargetValue(mcapTargets[2]), id: Date.now().toString() + '-3', percentToSell: '66.67' },
+      { ...formatTargetValue(mcapTargets[3]), id: Date.now().toString() + '-4', percentToSell: '100' },
+    ]
+    setExitTargets(targets)
+  }
+
+  const generateBalancedStrategy = () => {
+    const currentMcap = marketCap
+    
+    // Check if user entered a target MCAP
+    let mcapTargets: number[]
+    if (targetMcapValue) {
+      const targetMcap = targetMcapUnit === 'billion' 
+        ? Number(targetMcapValue) * 1_000_000_000 
+        : Number(targetMcapValue) * 1_000_000
+      mcapTargets = calculateEvenTargets(targetMcap)
+    } else {
+      // Use default multipliers
+      mcapTargets = [currentMcap * 2, currentMcap * 5, currentMcap * 10, currentMcap * 20]
+    }
+
+    // Goal: Exit 25%, 25%, 25%, 25% of TOTAL (100% complete exit)
+    // Calculation: 25% of 100, then 33.33% of 75, then 50% of 50, then 100% of 25
+    const targets: ExitTarget[] = [
+      { ...formatTargetValue(mcapTargets[0]), id: Date.now().toString() + '-1', percentToSell: '25' },
+      { ...formatTargetValue(mcapTargets[1]), id: Date.now().toString() + '-2', percentToSell: '33.33' },
+      { ...formatTargetValue(mcapTargets[2]), id: Date.now().toString() + '-3', percentToSell: '50' },
+      { ...formatTargetValue(mcapTargets[3]), id: Date.now().toString() + '-4', percentToSell: '100' },
+    ]
+    setExitTargets(targets)
+  }
+
+  const generateRiskyStrategy = () => {
+    const currentMcap = marketCap
+    
+    // Check if user entered a target MCAP
+    let mcapTargets: number[]
+    if (targetMcapValue) {
+      const targetMcap = targetMcapUnit === 'billion' 
+        ? Number(targetMcapValue) * 1_000_000_000 
+        : Number(targetMcapValue) * 1_000_000
+      mcapTargets = calculateEvenTargets(targetMcap)
+    } else {
+      // Use default multipliers
+      mcapTargets = [currentMcap * 5, currentMcap * 10, currentMcap * 25, currentMcap * 50]
+    }
+
+    // Goal: Exit 10%, 20%, 30%, 40% of TOTAL (100% complete exit)
+    // Calculation: 10% of 100, then 22.22% of 90, then 42.86% of 70, then 100% of 40
+    const targets: ExitTarget[] = [
+      { ...formatTargetValue(mcapTargets[0]), id: Date.now().toString() + '-1', percentToSell: '10' },
+      { ...formatTargetValue(mcapTargets[1]), id: Date.now().toString() + '-2', percentToSell: '22.22' },
+      { ...formatTargetValue(mcapTargets[2]), id: Date.now().toString() + '-3', percentToSell: '42.86' },
+      { ...formatTargetValue(mcapTargets[3]), id: Date.now().toString() + '-4', percentToSell: '100' },
+    ]
+    setExitTargets(targets)
+  }
 
   // Exit targets helpers
   const addExitTarget = () => {
@@ -268,6 +420,7 @@ export default function ExitStrategy() {
   const exitCalculations = useMemo(() => {
     let remainingTokens = holdingsNum
     let cumulativeProceeds = 0
+    let cumulativeProfitLoss = 0
     const SELL_TAX = 0.10 // 10% sell tax on all nftstrategy.fun tokens
 
     return exitTargets.map((target) => {
@@ -278,9 +431,14 @@ export default function ExitStrategy() {
       const tokensToSell = (percentNum / 100) * remainingTokens
       const grossProceeds = tokensToSell * impliedPrice
       const proceeds = grossProceeds * (1 - SELL_TAX) // Account for 10% sell tax
+      
+      // Profit/Loss calculation: Proceeds - Cost Basis
+      const costBasis = tokensToSell * avgEntryNum
+      const profitLoss = proceeds - costBasis
 
       remainingTokens -= tokensToSell
       cumulativeProceeds += proceeds
+      cumulativeProfitLoss += profitLoss
 
       return {
         id: target.id,
@@ -288,11 +446,13 @@ export default function ExitStrategy() {
         impliedPrice,
         tokensToSell,
         proceeds,
+        profitLoss,
         remainingTokens,
         cumulativeProceeds,
+        cumulativeProfitLoss,
       }
     })
-  }, [exitTargets, holdingsNum, currentPrice, marketCap])
+  }, [exitTargets, holdingsNum, currentPrice, marketCap, avgEntryNum])
 
   // Load wallet portfolio data from Etherscan
   const loadWalletData = async () => {
@@ -337,6 +497,22 @@ export default function ExitStrategy() {
 
   const handlePrint = () => {
     window.print()
+  }
+
+  const clearAllData = () => {
+    if (window.confirm('Clear all saved data? This will reset holdings, entry price, exit targets, and wallet address.')) {
+      localStorage.removeItem(STORAGE_KEY_SELECTED_COIN)
+      localStorage.removeItem(STORAGE_KEY_HOLDINGS)
+      localStorage.removeItem(STORAGE_KEY_AVG_ENTRY)
+      localStorage.removeItem(STORAGE_KEY_EXIT_TARGETS)
+      localStorage.removeItem(STORAGE_KEY_WALLET_ADDRESS)
+      
+      setSelectedCoinId('pnkstr')
+      setHoldings('')
+      setAvgEntry('')
+      setExitTargets([])
+      setWalletAddress('')
+    }
   }
 
   // Drag and drop sensors
@@ -517,6 +693,13 @@ export default function ExitStrategy() {
               <h2 className="text-lg font-medium uppercase tracking-tight">Exit Strategy</h2>
               <div className="flex items-center gap-3">
                 <button
+                  onClick={clearAllData}
+                  className="flex items-center gap-2 border border-gray-800 rounded px-4 py-2 hover:border-red-500 hover:text-red-500 transition-colors text-sm"
+                  title="Clear all saved data"
+                >
+                  🗑️ Clear
+                </button>
+                <button
                   onClick={handlePrint}
                   className="flex items-center gap-2 border border-gray-800 rounded px-4 py-2 hover:border-white transition-colors text-sm"
                   title="Print or save as PDF"
@@ -535,10 +718,81 @@ export default function ExitStrategy() {
               All proceeds calculated after 10% sell tax
             </p>
 
+            {/* Quick Start - Preset Strategies */}
+            <div className="mb-6 pb-6 border-b border-gray-800 no-print">
+              <div className="text-xs text-gray-400 mb-3 uppercase tracking-wider">
+                Quick Start - Generate Strategy
+              </div>
+              
+              {/* Optional Target MCAP Input */}
+              <div className="mb-4 pb-4 border-b border-gray-800">
+                <div className="text-xs text-gray-500 mb-2">
+                  Ultimate Exit Target (Optional)
+                </div>
+                <div className="flex gap-2 items-center">
+                  <input
+                    type="number"
+                    value={targetMcapValue}
+                    onChange={(e) => setTargetMcapValue(e.target.value)}
+                    placeholder="e.g. 500"
+                    className="w-32 border border-gray-700 rounded-md px-3 py-2 bg-gray-900 text-white placeholder-gray-600 text-sm"
+                  />
+                  <select
+                    value={targetMcapUnit}
+                    onChange={(e) => setTargetMcapUnit(e.target.value as 'million' | 'billion')}
+                    className="border border-gray-700 rounded-md px-3 py-2 bg-gray-900 text-white text-sm"
+                  >
+                    <option value="million">Million</option>
+                    <option value="billion">Billion</option>
+                  </select>
+                  {targetMcapValue && (
+                    <button
+                      onClick={() => setTargetMcapValue('')}
+                      className="text-xs text-gray-500 hover:text-white transition-colors"
+                    >
+                      Clear
+                    </button>
+                  )}
+                  <div className="text-xs text-gray-600 ml-2">
+                    {targetMcapValue ? 'Targets spread evenly to your goal' : 'Leave blank for default multipliers'}
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <button
+                  onClick={generateConservativeStrategy}
+                  className="border border-gray-800 rounded-lg p-4 hover:border-white transition-colors text-left group"
+                >
+                  <div className="text-sm font-bold uppercase tracking-tight mb-1">Conservative</div>
+                  <div className="text-xs text-gray-500 group-hover:text-gray-400">Take Profits Early</div>
+                  <div className="text-xs text-gray-600 mt-2">{targetMcapValue ? 'Custom → Target' : '2x→10x'} • Front-loaded</div>
+                </button>
+                
+                <button
+                  onClick={generateBalancedStrategy}
+                  className="border border-gray-800 rounded-lg p-4 hover:border-white transition-colors text-left group"
+                >
+                  <div className="text-sm font-bold uppercase tracking-tight mb-1">Balanced</div>
+                  <div className="text-xs text-gray-500 group-hover:text-gray-400">Steady Growth</div>
+                  <div className="text-xs text-gray-600 mt-2">{targetMcapValue ? 'Custom → Target' : '2x→20x'} • Even Split</div>
+                </button>
+                
+                <button
+                  onClick={generateRiskyStrategy}
+                  className="border border-gray-800 rounded-lg p-4 hover:border-white transition-colors text-left group"
+                >
+                  <div className="text-sm font-bold uppercase tracking-tight mb-1">Risky</div>
+                  <div className="text-xs text-gray-500 group-hover:text-gray-400">Let It Ride</div>
+                  <div className="text-xs text-gray-600 mt-2">{targetMcapValue ? 'Custom → Target' : '5x→50x'} • Back-loaded</div>
+                </button>
+              </div>
+            </div>
+
             {exitTargets.length === 0 ? (
               <div className="text-center py-12 text-gray-500 no-print">
                 <p>No exit targets yet.</p>
-                <p className="text-sm mt-2">Click "+ Add Exit Target" to get started.</p>
+                <p className="text-sm mt-2">Choose a preset strategy above or click "+ Add Exit Target" manually.</p>
               </div>
             ) : (
               <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
@@ -565,13 +819,20 @@ export default function ExitStrategy() {
             {/* Summary Footer */}
             {exitCalculations.length > 0 && (
               <div className="border-t border-gray-800 pt-4 mt-4">
-                <div className="flex justify-between items-center">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
-                    <div className="text-sm text-gray-400">Total Planned Proceeds</div>
+                    <div className="text-sm text-gray-400">Total Proceeds</div>
                     <div className="text-lg font-medium">{formatUSD(exitCalculations[exitCalculations.length - 1]?.cumulativeProceeds || 0)}</div>
                   </div>
+                  <div>
+                    <div className="text-sm text-gray-400">Total Profit/Loss</div>
+                    <div className={`text-lg font-medium ${exitCalculations[exitCalculations.length - 1]?.cumulativeProfitLoss >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                      {exitCalculations[exitCalculations.length - 1]?.cumulativeProfitLoss >= 0 ? '+' : ''}
+                      {formatUSD(exitCalculations[exitCalculations.length - 1]?.cumulativeProfitLoss || 0)}
+                    </div>
+                  </div>
                   <div className="text-right">
-                    <div className="text-sm text-gray-400">Final Tokens Remaining</div>
+                    <div className="text-sm text-gray-400">Tokens Remaining</div>
                     <div className="text-lg font-medium">{formatNumber(exitCalculations[exitCalculations.length - 1]?.remainingTokens || 0)}</div>
                   </div>
                 </div>
