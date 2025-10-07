@@ -199,7 +199,7 @@ export default function LaunchSimulator() {
                   Data from GeckoTerminal
                 </a>
               </div>
-              <div className="text-xs text-gray-600 mt-2">
+              <div className="text-xs text-yellow-200 mt-2">
                 Market cap values use average of open and close prices per minute for more accurate entry pricing
               </div>
             </div>
