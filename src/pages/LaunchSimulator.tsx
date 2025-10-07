@@ -1,11 +1,14 @@
 import { Link } from 'react-router-dom'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { fetchLaunchDataCached, type HistoricalLaunchData } from '../geckoterminal'
+import { fetchCoinOverview } from '../api'
+import { COINS } from '../components/StrategyOverview'
 
 // Launch parameters (fixed for v1)
 const TOTAL_SUPPLY = 1_000_000_000
 
 function formatCompact(value: number): string {
-  if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(1)}M`
+  if (value >= 1_000_000) return `$${(value / 1_000_000).toFixed(2)}M`
   if (value >= 1_000) return `$${(value / 1_000).toFixed(1)}K`
   return `$${value.toFixed(0)}`
 }
@@ -27,10 +30,47 @@ function calculateTax(minute: number): number {
 }
 
 export default function LaunchSimulator() {
+  // Mode: simulation or historical
+  const [mode, setMode] = useState<'simulation' | 'historical'>('simulation')
+  
+  // Token selection for historical mode
+  const [selectedTokenAddress, setSelectedTokenAddress] = useState(COINS[0].address) // Default to PNKSTR
+  
+  // Historical data state
+  const [historicalData, setHistoricalData] = useState<HistoricalLaunchData | null>(null)
+  const [isLoadingData, setIsLoadingData] = useState(false)
+  const [dataError, setDataError] = useState<string | null>(null)
+  
   const [entryMinute, setEntryMinute] = useState(30)
   const [entryMarketCap, setEntryMarketCap] = useState(200000) // $200K default
   const [exitMarketCap, setExitMarketCap] = useState(5000000) // $5M default
   const [investment, setInvestment] = useState('1000')
+  
+  // Fetch historical data when switching to historical mode or changing token
+  useEffect(() => {
+    if (mode === 'historical') {
+      setIsLoadingData(true)
+      setDataError(null)
+      setHistoricalData(null) // Clear old data
+      
+      fetchLaunchDataCached(selectedTokenAddress)
+        .then((data) => {
+          if (data) {
+            setHistoricalData(data)
+            console.log(`Loaded ${data.dataPoints.length} data points for ${data.tokenSymbol}`)
+          } else {
+            setDataError('Failed to load historical data')
+          }
+        })
+        .catch((err) => {
+          console.error('Error fetching historical data:', err)
+          setDataError('Error loading data')
+        })
+        .finally(() => {
+          setIsLoadingData(false)
+        })
+    }
+  }, [mode, selectedTokenAddress])
 
   // Auto-adjust exit MCAP if it's below entry MCAP
   const handleEntryMcapChange = (newEntryMcap: number) => {
@@ -39,13 +79,43 @@ export default function LaunchSimulator() {
       setExitMarketCap(newEntryMcap)
     }
   }
+  
+  // Fetch and set current market cap for exit target
+  const [isLoadingCurrentMcap, setIsLoadingCurrentMcap] = useState(false)
+  const handleSetCurrentMcap = async () => {
+    setIsLoadingCurrentMcap(true)
+    try {
+      const data = await fetchCoinOverview(selectedTokenAddress)
+      if (data?.marketCap) {
+        setExitMarketCap(data.marketCap)
+      }
+    } catch (error) {
+      console.error('Error fetching current market cap:', error)
+    } finally {
+      setIsLoadingCurrentMcap(false)
+    }
+  }
 
   const investmentNum = Number(investment) || 0
   const taxRate = calculateTax(entryMinute)
   const SELL_TAX = 0.10 // 10% sell tax on all nftstrategy.fun tokens
   
+  // Helper: Get data point for a specific minute (data is now filled with no gaps)
+  const getDataPointForMinute = (minute: number) => {
+    if (!historicalData || minute < 0 || minute > 89) return null
+    // Data is filled for every minute 0-89, so we can directly access by index
+    return historicalData.dataPoints[minute]
+  }
+  
+  // Calculate actual entry market cap based on mode
+  // In historical mode: use real data from selected minute
+  // In simulation mode: use slider value
+  const actualEntryMarketCap = mode === 'historical' && historicalData
+    ? (getDataPointForMinute(entryMinute)?.marketCap ?? entryMarketCap)
+    : entryMarketCap
+  
   // Entry price based on entry market cap
-  const entryPrice = entryMarketCap / TOTAL_SUPPLY
+  const entryPrice = actualEntryMarketCap / TOTAL_SUPPLY
   
   // Tokens received after buy tax
   const tokensReceived = (investmentNum * (1 - taxRate / 100)) / entryPrice
@@ -74,6 +144,86 @@ export default function LaunchSimulator() {
           </p>
         </div>
 
+        {/* Mode Toggle */}
+        <div className="glass-card border-punk rounded-lg p-6 mb-8">
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div>
+              <h3 className="text-sm font-bold uppercase tracking-wider mb-1">MODE</h3>
+              <p className="text-xs text-gray-500">
+                {mode === 'simulation' 
+                  ? 'Use custom parameters to simulate entry scenarios' 
+                  : 'Use real historical data from actual token launches (FIRST 90 MINUTES)'}
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setMode('simulation')}
+                className={`px-6 py-3 rounded font-bold text-sm uppercase tracking-wider transition-all ${
+                  mode === 'simulation'
+                    ? 'bg-white text-black'
+                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                }`}
+              >
+                Simulation
+              </button>
+              <button
+                onClick={() => setMode('historical')}
+                className={`px-6 py-3 rounded font-bold text-sm uppercase tracking-wider transition-all ${
+                  mode === 'historical'
+                    ? 'bg-white text-black'
+                    : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
+                }`}
+              >
+                Historical Data
+              </button>
+            </div>
+          </div>
+          
+          {/* Loading/Error/Success States */}
+          {mode === 'historical' && isLoadingData && (
+            <div className="mt-4 pt-4 border-t border-gray-800 text-sm text-gray-400">
+              Loading {COINS.find(c => c.address === selectedTokenAddress)?.symbol} historical launch data (first 90 minutes)...
+            </div>
+          )}
+          {mode === 'historical' && dataError && (
+            <div className="mt-4 pt-4 border-t border-gray-800 text-sm text-red-500">
+              {dataError}
+            </div>
+          )}
+          {mode === 'historical' && historicalData && !isLoadingData && (
+            <div className="mt-4 pt-4 border-t border-gray-800 text-xs text-gray-500 uppercase tracking-wider">
+              {historicalData.tokenSymbol} Launch Data Loaded • 
+              Launched: {new Date(historicalData.launchTimestamp * 1000).toLocaleDateString()} •{' '}
+              <a href="https://www.geckoterminal.com/" target="_blank" rel="noopener noreferrer" className="text-white hover:underline">
+                Data from GeckoTerminal
+              </a>
+            </div>
+          )}
+        </div>
+
+        {/* Token Selector (Historical Mode Only) */}
+        {mode === 'historical' && (
+          <div className="glass-card border-punk rounded-lg p-6 mb-8">
+            <label className="block">
+              <div className="text-sm font-bold uppercase tracking-wider mb-2">SELECT TOKEN</div>
+              <select
+                value={selectedTokenAddress}
+                onChange={(e) => setSelectedTokenAddress(e.target.value)}
+                className="w-full bg-gray-900 border border-gray-700 rounded px-4 py-3 text-lg font-bold uppercase tracking-wider cursor-pointer hover:border-gray-500 transition-colors"
+              >
+                {COINS.map((coin) => (
+                  <option key={coin.address} value={coin.address}>
+                    {coin.symbol} - {coin.name}
+                  </option>
+                ))}
+              </select>
+              <div className="text-xs text-gray-500 mt-2 uppercase tracking-wider">
+                Analyze historical launch data from the first 90 minutes
+              </div>
+            </label>
+          </div>
+        )}
+
         {/* Three Sliders + Investment */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {/* Slider 1: Entry Minute */}
@@ -84,14 +234,14 @@ export default function LaunchSimulator() {
               <input
                 type="range"
                 min="0"
-                max="90"
+                max="89"
                 value={entryMinute}
                 onChange={(e) => setEntryMinute(Number(e.target.value))}
                 className="w-full h-2 bg-gray-800 rounded-lg appearance-none cursor-pointer"
               />
               <div className="flex justify-between text-xs text-gray-600 mt-2">
                 <span>0</span>
-                <span>90</span>
+                <span>89</span>
               </div>
             </label>
             <div className="mt-4 pt-4 border-t border-gray-800">
@@ -105,16 +255,22 @@ export default function LaunchSimulator() {
           {/* Slider 2: Entry Market Cap */}
           <div className="glass-card border-punk rounded-lg p-6">
             <label className="block mb-4">
-              <div className="text-xs text-gray-500 uppercase tracking-wider mb-2">Entry Market Cap</div>
-              <div className="text-3xl font-bold mb-4">{formatCompact(entryMarketCap)}</div>
+              <div className="text-xs text-gray-500 uppercase tracking-wider mb-2">
+                Entry Market Cap
+                {mode === 'historical' && <span className="ml-2 text-green-500">[LOCKED - FROM REAL DATA]</span>}
+              </div>
+              <div className="text-3xl font-bold mb-4">{formatCompact(actualEntryMarketCap)}</div>
               <input
                 type="range"
                 min="50000"
                 max="5000000"
                 step="50000"
-                value={entryMarketCap}
+                value={mode === 'historical' ? actualEntryMarketCap : entryMarketCap}
                 onChange={(e) => handleEntryMcapChange(Number(e.target.value))}
-                className="w-full h-2 bg-gray-800 rounded-lg appearance-none cursor-pointer"
+                disabled={mode === 'historical'}
+                className={`w-full h-2 bg-gray-800 rounded-lg appearance-none ${
+                  mode === 'historical' ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+                }`}
               />
               <div className="flex justify-between text-xs text-gray-600 mt-2">
                 <span>$50K</span>
@@ -130,7 +286,18 @@ export default function LaunchSimulator() {
           {/* Slider 3: Exit Market Cap */}
           <div className="glass-card border-punk rounded-lg p-6">
             <label className="block mb-4">
-              <div className="text-xs text-gray-500 uppercase tracking-wider mb-2">Exit Market Cap</div>
+              <div className="flex items-center justify-between mb-2">
+                <div className="text-xs text-gray-500 uppercase tracking-wider">Exit Market Cap</div>
+                {mode === 'historical' && (
+                  <button
+                    onClick={handleSetCurrentMcap}
+                    disabled={isLoadingCurrentMcap}
+                    className="text-xs uppercase tracking-wider px-2 py-1 bg-gray-800 hover:bg-gray-700 rounded transition-colors disabled:opacity-50"
+                  >
+                    {isLoadingCurrentMcap ? 'Loading...' : 'Set to Current'}
+                  </button>
+                )}
+              </div>
               <div className="text-3xl font-bold mb-4">{formatCompact(exitMarketCap)}</div>
               <input
                 type="range"
@@ -232,8 +399,16 @@ export default function LaunchSimulator() {
           <div className="space-y-4">
             {[0, 15, 30, 45, 60, 75, 85].map((min) => {
               const tax = calculateTax(min)
-              // Use same entry price for comparison (same entry MCAP assumption)
-              const tokens = (investmentNum * (1 - tax / 100)) / entryPrice
+              
+              // Calculate entry MCAP for this minute
+              // In historical mode: use real data from that minute
+              // In simulation mode: use same entry MCAP as main calculation
+              const entryMcapForMin = mode === 'historical' && historicalData
+                ? (getDataPointForMinute(min)?.marketCap ?? entryMarketCap)
+                : entryMarketCap
+              
+              const entryPriceForMin = entryMcapForMin / TOTAL_SUPPLY
+              const tokens = (investmentNum * (1 - tax / 100)) / entryPriceForMin
               const grossValue = tokens * exitPrice
               const value = grossValue * (1 - SELL_TAX) // Account for 10% sell tax
               const p = value - investmentNum
