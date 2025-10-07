@@ -9,12 +9,12 @@ export default function Landing() {
         <div className="relative max-w-[1200px] mx-auto px-6 py-20 text-center">
           {/* Main Title - MASSIVE, BOLD, WHITE */}
           <h1 className="text-6xl md:text-7xl lg:text-9xl font-black mb-6 tracking-tighter text-white">
-            GOOD VIBES CLUB
+            VIBE WHEELING
           </h1>
           
           {/* Tagline - Grungy */}
           <p className="text-grungy text-base md:text-lg mb-8">
-            COMMUNITY PERPETUAL STRATEGY SIMULATORS
+            Tools for strategy token traders.
           </p>
         </div>
       </div>
