@@ -277,6 +277,10 @@ export default function ExitStrategy() {
   // Persist data to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY_SELECTED_COIN, selectedCoinId)
+    // Clear holdings and entry when changing tokens (keep wallet address)
+    setHoldings('')
+    setAvgEntry('')
+    setExitTargets([])
   }, [selectedCoinId])
 
   useEffect(() => {
@@ -302,6 +306,11 @@ export default function ExitStrategy() {
   const totalInvested = holdingsNum * avgEntryNum
   const portfolioValue = holdingsNum * currentPrice
   const unrealizedPL = avgEntryNum > 0 ? (currentPrice - avgEntryNum) * holdingsNum : 0
+  
+  // Calculate realized P/L from exit targets (cumulative from all planned exits)
+  const realizedPL = exitCalculations.length > 0 
+    ? exitCalculations[exitCalculations.length - 1]?.cumulativeProfitLoss || 0 
+    : 0
 
   // Helper: Format target value with smart unit detection
   const formatTargetValue = (mcapUsd: number): { targetValue: string; unit: 'million' | 'billion' } => {
@@ -645,7 +654,7 @@ export default function ExitStrategy() {
             </div>
 
             {/* Portfolio Inputs & Metrics */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
               <div className="border border-gray-800 rounded-md p-3">
                 <div className="text-xs text-gray-500 mb-2">Holdings</div>
                 <input
@@ -672,6 +681,11 @@ export default function ExitStrategy() {
                 label="Unrealized P/L" 
                 value={formatUSD(unrealizedPL)} 
                 colorClass={unrealizedPL >= 0 ? 'text-green-500' : 'text-red-500'}
+              />
+              <MetricWithColor 
+                label="Realized P/L" 
+                value={formatUSD(realizedPL)} 
+                colorClass={realizedPL >= 0 ? 'text-green-500' : 'text-red-500'}
               />
             </div>
           </div>
