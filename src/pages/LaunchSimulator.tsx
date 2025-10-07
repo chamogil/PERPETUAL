@@ -191,17 +191,12 @@ export default function LaunchSimulator() {
             </div>
           )}
           {mode === 'historical' && historicalData && !isLoadingData && (
-            <div className="mt-4 pt-4 border-t border-gray-800">
-              <div className="text-xs text-gray-500 uppercase tracking-wider">
-                {historicalData.tokenSymbol} Launch Data Loaded • 
-                Launched: {new Date(historicalData.launchTimestamp * 1000).toLocaleDateString()} •{' '}
-                <a href="https://www.geckoterminal.com/" target="_blank" rel="noopener noreferrer" className="text-white hover:underline">
-                  Data from GeckoTerminal
-                </a>
-              </div>
-              <div className="text-xs text-yellow-200 mt-2">
-                Market cap values use average of open and close prices per minute for more accurate entry pricing
-              </div>
+            <div className="mt-4 pt-4 border-t border-gray-800 text-xs text-gray-500 uppercase tracking-wider">
+              {historicalData.tokenSymbol} Launch Data Loaded • 
+              Launched: {new Date(historicalData.launchTimestamp * 1000).toLocaleDateString()} •{' '}
+              <a href="https://www.geckoterminal.com/" target="_blank" rel="noopener noreferrer" className="text-white hover:underline">
+                Data from GeckoTerminal
+              </a>
             </div>
           )}
         </div>
@@ -343,6 +338,12 @@ export default function LaunchSimulator() {
         {/* Results Card */}
         <div className="glass-card border-punk rounded-lg p-8 mb-8">
           <h2 className="text-xl font-black uppercase tracking-tight mb-6">YOUR RESULTS</h2>
+          
+          {mode === 'historical' && (
+            <div className="text-xs text-yellow-200 mb-4 pb-4 border-b border-gray-800">
+              Market cap values use average of open and close prices per minute for more accurate entry pricing
+            </div>
+          )}
           
           <div className="grid grid-cols-2 md:grid-cols-3 gap-6 mb-8">
             <div>
