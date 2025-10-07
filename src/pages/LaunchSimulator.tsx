@@ -191,12 +191,17 @@ export default function LaunchSimulator() {
             </div>
           )}
           {mode === 'historical' && historicalData && !isLoadingData && (
-            <div className="mt-4 pt-4 border-t border-gray-800 text-xs text-gray-500 uppercase tracking-wider">
-              {historicalData.tokenSymbol} Launch Data Loaded • 
-              Launched: {new Date(historicalData.launchTimestamp * 1000).toLocaleDateString()} •{' '}
-              <a href="https://www.geckoterminal.com/" target="_blank" rel="noopener noreferrer" className="text-white hover:underline">
-                Data from GeckoTerminal
-              </a>
+            <div className="mt-4 pt-4 border-t border-gray-800">
+              <div className="text-xs text-gray-500 uppercase tracking-wider">
+                {historicalData.tokenSymbol} Launch Data Loaded • 
+                Launched: {new Date(historicalData.launchTimestamp * 1000).toLocaleDateString()} •{' '}
+                <a href="https://www.geckoterminal.com/" target="_blank" rel="noopener noreferrer" className="text-white hover:underline">
+                  Data from GeckoTerminal
+                </a>
+              </div>
+              <div className="text-xs text-gray-600 mt-2">
+                Market cap values use average of open and close prices per minute for more accurate entry pricing
+              </div>
             </div>
           )}
         </div>
