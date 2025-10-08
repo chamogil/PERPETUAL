@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { useEffect, useMemo, useState } from 'react'
 import { fetchHeaderMetrics } from '../api'
-import { fetchWalletPortfolio } from '../etherscan'
+import { fetchWalletPortfolio, fetchTokenSupply } from '../etherscan'
 import {
   DndContext,
   closestCenter,
@@ -249,6 +249,12 @@ export default function ExitStrategy() {
   const [liquidityUsd, setLiquidityUsd] = useState<number | null>(null)
   const [volume24h, setVolume24h] = useState<number | null>(null)
   const [priceChange24h, setPriceChange24h] = useState<number | null>(null)
+  const [tokenSupply, setTokenSupply] = useState<{
+    maxSupply: number
+    totalSupply: number
+    circulatingSupply: number
+    burned: number
+  } | null>(null)
   const [txns24h, setTxns24h] = useState<number | null>(null)
   const [buys24h, setBuys24h] = useState<number | null>(null)
   const [sells24h, setSells24h] = useState<number | null>(null)
@@ -258,6 +264,7 @@ export default function ExitStrategy() {
     let isCancelled = false
     async function load() {
       const res = await fetchHeaderMetrics(selectedCoin.address)
+      const supply = await fetchTokenSupply(selectedCoin.address)
       if (!isCancelled) {
         setPriceUsd(res.priceUsd)
         setMarketCapUsd(res.marketCapUsd)
@@ -267,6 +274,7 @@ export default function ExitStrategy() {
         setTxns24h(res.txns24h)
         setBuys24h(res.buys24h)
         setSells24h(res.sells24h)
+        setTokenSupply(supply)
       }
     }
     load()
@@ -609,13 +617,16 @@ export default function ExitStrategy() {
                     setBuys24h(r.buys24h)
                     setSells24h(r.sells24h)
                   })
+                  fetchTokenSupply(selectedCoin.address).then((supply) => {
+                    setTokenSupply(supply)
+                  })
                 }}
               >
                 Refresh
               </button>
             </div>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
               <Metric label="Price USD" value={formatPrice(currentPrice)} />
               <Metric label="Market Cap" value={formatUSD(marketCap)} />
               <MetricWithColor 
@@ -626,6 +637,42 @@ export default function ExitStrategy() {
               <Metric label="Liquidity" value={liquidityUsd ? formatCompact(liquidityUsd) : '—'} />
               <Metric label="Txns" value={txns24h ? formatNumber(txns24h) : '—'} />
               <Metric label="Volume" value={volume24h ? formatCompact(volume24h) : '—'} />
+            </div>
+            
+            {/* Supply Metrics */}
+            {tokenSupply && (
+              <div className="border border-gray-800 rounded-lg p-4 mb-6">
+                <h3 className="text-xs font-bold uppercase text-gray-500 tracking-wider mb-3">Supply Metrics</h3>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  <div>
+                    <div className="text-xs text-gray-600 uppercase tracking-wider mb-1">Max Supply</div>
+                    <div className="text-sm font-bold text-gray-400">
+                      {tokenSupply.maxSupply.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-gray-600 uppercase tracking-wider mb-1">Burned</div>
+                    <div className="text-sm font-bold text-red-400">
+                      {tokenSupply.burned.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-gray-600 uppercase tracking-wider mb-1">Circulating</div>
+                    <div className="text-sm font-bold text-green-400">
+                      {tokenSupply.circulatingSupply.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-xs text-gray-600 uppercase tracking-wider mb-1">Burn Rate</div>
+                    <div className="text-sm font-bold text-gray-400">
+                      {((tokenSupply.burned / tokenSupply.maxSupply) * 100).toFixed(2)}%
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            <div className="grid grid-cols-2 gap-4">
               <Metric label="Buys" value={buys24h ? formatNumber(buys24h) : '—'} />
               <Metric label="Sells" value={sells24h ? formatNumber(sells24h) : '—'} />
             </div>

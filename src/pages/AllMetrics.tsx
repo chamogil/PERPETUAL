@@ -2,11 +2,18 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { COINS, type CoinConfig } from '../components/StrategyOverview'
 import { fetchDexByTokenAddress, type DexPair } from '../api'
+import { fetchTokenSupply } from '../etherscan'
 
 type MetricsData = {
   coin: CoinConfig
   pair: DexPair | null
   loading: boolean
+  supply: {
+    maxSupply: number
+    totalSupply: number
+    circulatingSupply: number
+    burned: number
+  } | null
 }
 
 function formatNumber(num: number | null | undefined): string {
@@ -48,9 +55,12 @@ export default function AllMetrics() {
             ? pairs.reduce((a, b) => ((a?.liquidity?.usd ?? 0) >= (b?.liquidity?.usd ?? 0) ? a : b))
             : null
           
+          const supply = await fetchTokenSupply(coin.address)
+          
           return {
             coin,
             pair: bestPair,
+            supply,
             loading: false
           }
         })
@@ -101,7 +111,7 @@ export default function AllMetrics() {
           </div>
         ) : (
           <div className="space-y-6">
-            {metricsData.map(({ coin, pair }) => (
+            {metricsData.map(({ coin, pair, supply }) => (
               <div key={coin.id} className="glass-card border border-gray-800 rounded-xl p-6 hover:border-gray-700 transition-all duration-300">
                 {/* Token Header */}
                 <div className="flex items-center justify-between mb-4 pb-4 border-b border-gray-800">
@@ -147,7 +157,7 @@ export default function AllMetrics() {
                 {!pair ? (
                   <div className="text-center py-16 text-gray-500 uppercase tracking-wider">No trading data available</div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     {/* Market Metrics */}
                     <div className="space-y-4 bg-black/40 p-6 rounded-lg border border-gray-800">
                       <h3 className="text-xs font-bold uppercase text-gray-500 tracking-wider mb-4">Market Metrics</h3>
@@ -169,6 +179,41 @@ export default function AllMetrics() {
                           <div className="text-sm text-gray-400">{formatDate(pair.pairCreatedAt)}</div>
                         </div>
                       </div>
+                    </div>
+                    
+                    {/* Supply Metrics */}
+                    <div className="space-y-4 bg-black/40 p-6 rounded-lg border border-gray-800">
+                      <h3 className="text-xs font-bold uppercase text-gray-500 tracking-wider mb-4">Supply Metrics</h3>
+                      {supply ? (
+                        <div className="space-y-3">
+                          <div>
+                            <div className="text-xs text-gray-600 uppercase tracking-wider mb-1">Max Supply</div>
+                            <div className="text-lg font-bold text-gray-400">
+                              {supply.maxSupply.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                            </div>
+                          </div>
+                          <div>
+                            <div className="text-xs text-gray-600 uppercase tracking-wider mb-1">Burned</div>
+                            <div className="text-lg font-bold text-red-400">
+                              {supply.burned.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                            </div>
+                          </div>
+                          <div>
+                            <div className="text-xs text-gray-600 uppercase tracking-wider mb-1">Circulating</div>
+                            <div className="text-lg font-bold text-green-400">
+                              {supply.circulatingSupply.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                            </div>
+                          </div>
+                          <div>
+                            <div className="text-xs text-gray-600 uppercase tracking-wider mb-1">Burn Rate</div>
+                            <div className="text-sm text-gray-400">
+                              {((supply.burned / supply.maxSupply) * 100).toFixed(2)}%
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-sm text-gray-600">Loading supply data...</div>
+                      )}
                     </div>
 
                     {/* Price Changes */}

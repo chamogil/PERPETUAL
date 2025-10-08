@@ -86,6 +86,48 @@ export type WalletPortfolioData = {
 }
 
 /**
+ * Fetch token supply information from CoinGecko
+ * Returns max supply, current total supply (after burns), circulating supply
+ */
+export async function fetchTokenSupply(tokenAddress: string): Promise<{
+  maxSupply: number
+  totalSupply: number
+  circulatingSupply: number
+  burned: number
+} | null> {
+  try {
+    const url = `https://api.coingecko.com/api/v3/coins/ethereum/contract/${tokenAddress.toLowerCase()}`
+    const res = await fetch(url, {
+      headers: { 'accept': 'application/json' }
+    })
+    
+    if (!res.ok) {
+      console.error('CoinGecko API error:', res.status)
+      return null
+    }
+    
+    const data = await res.json()
+    
+    const maxSupply = data.market_data?.max_supply || 0
+    const totalSupply = data.market_data?.total_supply || 0
+    const circulatingSupply = data.market_data?.circulating_supply || 0
+    const burned = maxSupply > 0 ? maxSupply - totalSupply : 0
+    
+    console.log(`Token Supply - Max: ${maxSupply.toLocaleString()}, Total: ${totalSupply.toLocaleString()}, Circulating: ${circulatingSupply.toLocaleString()}, Burned: ${burned.toLocaleString()}`)
+    
+    return {
+      maxSupply,
+      totalSupply,
+      circulatingSupply,
+      burned
+    }
+  } catch (error) {
+    console.error('Error fetching token supply from CoinGecko:', error)
+    return null
+  }
+}
+
+/**
  * Fetch all ERC-20 token transfers for a specific address and token contract
  * 
  * Official endpoint: /v2/api?chainid=1&module=account&action=tokentx
