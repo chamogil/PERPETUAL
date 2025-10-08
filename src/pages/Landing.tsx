@@ -28,29 +28,33 @@ export default function Landing() {
             <div className="border-punk glass-card rounded-lg p-10 h-full hover-lift hover-border transition-all duration-300">
               <div className="flex flex-col h-full">
                 <h2 className="text-3xl font-black mb-5 text-white uppercase tracking-tight">
-                  NEW TOKEN LAUNCH SIMULATOR
+                  LAUNCH SIMULATOR
                 </h2>
                 
                 <p className="text-gray-500 mb-8 text-sm leading-relaxed">
-                  Optimize entry timing for new token launches with the dynamic tax system
+                  Model new token launches with tax rates, entry timing, and ROI calculations
                 </p>
                 
                 <ul className="space-y-4 mb-10 flex-grow">
                   <li className="flex items-start gap-3">
                     <span className="text-white font-bold">—</span>
-                    <span className="text-xs text-gray-400 uppercase tracking-wide">Dynamic Tax 95% → 10%</span>
+                    <span className="text-xs text-gray-400 uppercase tracking-wide">Tax Rate Slider (10%-99%)</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="text-white font-bold">—</span>
-                    <span className="text-xs text-gray-400 uppercase tracking-wide">ROI Calculator</span>
+                    <span className="text-xs text-gray-400 uppercase tracking-wide">Entry/Exit Market Cap Targets</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="text-white font-bold">—</span>
-                    <span className="text-xs text-gray-400 uppercase tracking-wide">Entry Optimizer</span>
+                    <span className="text-xs text-gray-400 uppercase tracking-wide">ROI Calculator (After Tax)</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="text-white font-bold">—</span>
-                    <span className="text-xs text-gray-400 uppercase tracking-wide">Scenario Comparison</span>
+                    <span className="text-xs text-gray-400 uppercase tracking-wide">Historical Mode (Real Launch Data)</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="text-white font-bold">—</span>
+                    <span className="text-xs text-gray-400 uppercase tracking-wide">Quick Comparison (7 Entry Times)</span>
                   </li>
                 </ul>
                 
@@ -66,29 +70,33 @@ export default function Landing() {
             <div className="border-punk glass-card rounded-lg p-10 h-full hover-lift hover-border transition-all duration-300">
               <div className="flex flex-col h-full">
                 <h2 className="text-3xl font-black mb-5 text-white uppercase tracking-tight">
-                  PORTFOLIO TRACKER / EXIT STRATEGY
+                  EXIT STRATEGY
                 </h2>
                 
                 <p className="text-gray-500 mb-8 text-sm leading-relaxed">
-                  Track your portfolio and plan strategic exits across market cap targets
+                  Track your portfolio and plan exits with preset strategies or custom targets
                 </p>
                 
                 <ul className="space-y-4 mb-10 flex-grow">
                   <li className="flex items-start gap-3">
                     <span className="text-white font-bold">—</span>
-                    <span className="text-xs text-gray-400 uppercase tracking-wide">6 Strategies Live</span>
+                    <span className="text-xs text-gray-400 uppercase tracking-wide">Wallet Integration (Auto-Load)</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="text-white font-bold">—</span>
-                    <span className="text-xs text-gray-400 uppercase tracking-wide">Exit Calculator</span>
+                    <span className="text-xs text-gray-400 uppercase tracking-wide">Preset Templates (Conservative/Balanced/Risky)</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="text-white font-bold">—</span>
-                    <span className="text-xs text-gray-400 uppercase tracking-wide">Drag Reorder</span>
+                    <span className="text-xs text-gray-400 uppercase tracking-wide">Real-Time P/L Tracking</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="text-white font-bold">—</span>
-                    <span className="text-xs text-gray-400 uppercase tracking-wide">Print/PDF</span>
+                    <span className="text-xs text-gray-400 uppercase tracking-wide">Custom Target MCAP</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="text-white font-bold">—</span>
+                    <span className="text-xs text-gray-400 uppercase tracking-wide">Drag Reorder + Print/Export</span>
                   </li>
                 </ul>
                 
