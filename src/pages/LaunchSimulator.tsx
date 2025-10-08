@@ -404,7 +404,7 @@ export default function LaunchSimulator() {
         <div className="glass-card border-punk rounded-lg p-8">
           <h2 className="text-xl font-black uppercase tracking-tight mb-2">QUICK COMPARISON</h2>
           <p className="text-xs text-gray-500 mb-6 uppercase tracking-wider">
-            ${investment} Investment • Entry: {formatCompact(entryMarketCap)} → Exit: {formatCompact(exitMarketCap)}
+            ${investment} Investment • Entry: {formatCompact(actualEntryMarketCap)} → Exit: {formatCompact(exitMarketCap)}
           </p>
           
           <div className="space-y-4">
