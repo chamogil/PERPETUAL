@@ -490,10 +490,10 @@ export default function InstantProfit() {
             ← Back to Dashboard
           </Link>
           <h1 className="text-5xl md:text-6xl font-black mt-4 mb-2 uppercase tracking-tight">
-            INSTANT PROFIT
+            BREAK EVEN LIVE
           </h1>
           <p className="text-gray-500 text-sm">
-            Track new token launches with live data and profit targets
+            Track new token launches with live break-even and profit targets
           </p>
         </div>
 

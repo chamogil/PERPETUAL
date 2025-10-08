@@ -16,50 +16,53 @@ A punk-minimal, utilitarian dashboard for tracking and planning trades on [nftst
 **Last Updated:** October 7, 2025
 
 **Recent Updates:**
+- ✅ **BREAK EVEN LIVE** - New feature for tracking live launches with real-time break-even and profit targets
+- ✅ **TOKEN SUPPLY METRICS** - App-wide supply tracking (Max Supply, Burned, Circulating, Burn Rate)
 - ✅ **EXIT STRATEGY PRESETS** - One-click Conservative/Balanced/Risky strategy templates
 - ✅ **CUSTOM TARGET MCAP** - Set your ultimate exit goal, system spreads targets evenly
 - ✅ **PROFIT/LOSS TRACKING** - Real-time P/L with green/red color coding per exit
 - ✅ **DATA PERSISTENCE** - Auto-save all data to localStorage (survives refresh)
 - ✅ **WALLET INTEGRATION** - Auto-load portfolio from blockchain with accurate entry prices
 - ✅ Full ETH + WETH support for all transaction types
-- ✅ Historical ETH price fetching for true cost basis calculation
-- ✅ New "All Metrics" page with comprehensive live data
-- ✅ Added GOBSTR (Gobstrategy) support - 7 strategies tracked
-- ✅ Strategies auto-sort by market cap on landing page
-- ✅ Clean monochrome design for metrics page
-- ✅ Rebranded to VIBE WHEELING
-- ✅ Unified punk-minimal color scheme across all pages
-- ✅ Launch Simulator with 3-slider system + 10% sell tax
-- ✅ Exit Strategy with drag-drop reordering + 10% sell tax
-- ✅ Portfolio section now shows "Total Invested" metric
-- ✅ Quick Comparison expanded to 7 entry times (0, 15, 30, 45, 60, 75, 85 min)
-- ✅ Donation section moved to end of landing page
-- ✅ Fixed 404 errors on page refresh (vercel.json routing)
-- ✅ All math verified accurate for nftstrategy.fun tokenomics
+- ✅ Historical ETH price fetching via CoinGecko with robust caching
+- ✅ "All Metrics" page with comprehensive live data and supply metrics
+- ✅ Added GOBSTR, PAINSTR support - 8 strategies tracked
+- ✅ Launch Simulator with Tax Rate slider + Historical Mode (PAINSTR data)
+- ✅ Exit Strategy with drag-drop reordering + wallet data caching
 - ✅ Auto-deploys on push via Vercel
 
 ---
 
 ## 🎯 What It Does
 
-**VIBE WHEELING** is a free helper tool with 4 main features:
+**VIBE WHEELING** is a free helper tool with 5 main features:
 
 ### 1. **Landing Page** (`/`)
-- Overview of all 7 NFT Strategy tokens (auto-sorted by market cap)
+- Overview of all 8 NFT Strategy tokens (auto-sorted by market cap)
 - Live market cap & 24h % change data
-- Navigate to simulator, exit planner, or metrics page
+- Navigate to simulator, exit planner, break-even tracker, or metrics page
 
 ### 2. **Launch Simulator** (`/launch-simulator`)
 - Optimize entry timing for new token launches
-- Accounts for dynamic buy tax (95% → 10%) + 10% sell tax
-- 3-slider system:
-  - **Entry Minute**: When you buy (0-90 min)
-  - **Entry Market Cap**: MCAP when you buy ($50K-$1M)
-  - **Exit Market Cap**: Your target ($Entry→$15M)
+- Accounts for dynamic buy tax (99% → 10%) + 10% sell tax
+- **Tax Rate Slider**: Select entry tax rate (99%-10%)
+- **Historical Mode**: Real 90-minute launch data (PAINSTR, PNKSTR, etc.)
 - Real-time ROI calculator with accurate tax calculations
-- Quick Comparison: 7 entry times (0, 15, 30, 45, 60, 75, 85 min)
+- Quick Comparison: 7 entry times showing historical MCap data
 
-### 3. **Exit Strategy Dashboard** (`/exit-strategy`)
+### 3. **Break Even Live** (`/instant-profit`)
+- Track live token launches in real-time
+- Quick-select buttons for all strategy tokens or paste any token address
+- Auto-load wallet holdings via Etherscan integration
+- Manual entry mode for simulation without wallet connection
+- Live price updates every 10 seconds
+- Embedded GeckoTerminal price chart
+- Break-even calculator (accounts for 10% sell tax)
+- Profit multiplier slider (0.1x to 10x) with live target tracking
+- Visual alerts when profit targets are hit
+- Token supply metrics (Max Supply, Burned, Circulating)
+
+### 4. **Exit Strategy Dashboard** (`/exit-strategy`)
 - **NEW: Preset Strategy Templates** - One-click exit planning
   - Conservative: 2x→10x (front-loaded profits)
   - Balanced: 2x→20x (even distribution)
@@ -92,16 +95,17 @@ A punk-minimal, utilitarian dashboard for tracking and planning trades on [nftst
 - Auto-refresh every 30 seconds
 - All proceeds calculated after tax
 
-### 4. **All Metrics** (`/all-metrics`)
+### 5. **All Metrics** (`/all-metrics`)
 - Comprehensive live data for all strategy tokens
-- Real-time updates every 30 seconds from DexScreener API
+- Real-time updates every 30 seconds from DexScreener + CoinGecko APIs
 - Complete metrics including:
   - Market Cap, FDV, Liquidity
+  - **Token Supply Metrics** (Max Supply, Burned, Circulating, Burn Rate %)
   - Price changes (5min, 1h, 6h, 24h)
   - Volume data across all timeframes
   - Trading activity (buys/sells/ratios)
   - DEX info and liquidity breakdown
-- Clean monochrome design with color only for price changes
+- Clean monochrome design with color-coded metrics
 - Accessible via "VIEW ALL METRICS" button on landing page
 
 ---
@@ -125,9 +129,9 @@ Frontend:       React 19 + TypeScript
 Routing:        React Router v6
 Styling:        Tailwind CSS v4
 Build Tool:     Vite 7
-Data APIs:      DexScreener API (market data)
-                Etherscan API V2 (blockchain data)
-                CoinGecko API (historical ETH prices)
+Data APIs:      DexScreener API (market data, live prices)
+                Etherscan API V2 (blockchain data, wallet portfolio)
+                CoinGecko API (historical ETH prices, token supply)
 Drag-Drop:      @dnd-kit
 State:          React hooks (no Redux/Zustand)
 Deployment:     Vercel (recommended)
@@ -171,10 +175,15 @@ pnkstr-dashboard/
 │   ├── pages/
 │   │   ├── Landing.tsx           # Home page
 │   │   ├── LaunchSimulator.tsx   # Launch entry optimizer
-│   │   └── ExitStrategy.tsx      # Portfolio dashboard
+│   │   ├── ExitStrategy.tsx      # Portfolio dashboard
+│   │   ├── InstantProfit.tsx     # Break Even Live tracker
+│   │   └── AllMetrics.tsx        # Comprehensive metrics
 │   ├── components/
 │   │   └── StrategyOverview.tsx  # All strategies overview bar
 │   ├── api.ts                    # DexScreener API calls
+│   ├── etherscan.ts              # Etherscan API + token supply
+│   ├── geckoterminal.ts          # GeckoTerminal config
+│   ├── historicalData.ts         # Historical launch data
 │   ├── lib.d.ts                  # TypeScript types
 │   ├── App.tsx                   # Router setup
 │   ├── main.tsx                  # App entry
@@ -194,6 +203,7 @@ pnkstr-dashboard/
 | Symbol | Name | Contract Address |
 |--------|------|------------------|
 | PNKSTR | PunkStrategy | `0xc50673edb3a7b94e8cad8a7d4e0cd68864e33edf` |
+| PAINSTR | PainStrategy | `0xdfc3af477979912ec90b138d3e5552d5304c5663` |
 | PUDGYSTR | PudgyStrategy | `0xb3d6e9e142a785ea8a4f0050fee73bcc3438c5c5` |
 | APESTR | ApeStrategy | `0x9ebf91b8d6ff68aa05545301a3d0984eaee54a03` |
 | TOADSTR | ToadzStrategy | `0x92cedfdbce6e87b595e4a529afa2905480368af4` |
@@ -345,10 +355,15 @@ ROI:              +1,650% 🚀
   - Transaction receipts (WETH detection from logs)
 
 ### CoinGecko API
-- **Endpoint**: `https://api.coingecko.com/api/v3/coins/ethereum/history`
+- **Endpoint**: `https://api.coingecko.com/api/v3/`
 - **API Key**: Not required (free tier)
-- **Purpose**: Historical ETH prices for accurate cost basis
-- **Rate Limit**: Handled with caching and 300ms delays
+- **Purpose**: 
+  - Historical ETH prices for accurate cost basis
+  - Token supply data (Max Supply, Total Supply, Circulating Supply)
+- **Rate Limit**: Handled with persistent localStorage caching
+- **Features**:
+  - Batch fetching of historical ETH prices
+  - Token supply via `/coins/ethereum/contract/{address}` endpoint
 
 ### Data Accuracy
 ✅ **Shown (accurate from APIs):**
