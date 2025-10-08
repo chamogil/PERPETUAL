@@ -233,6 +233,8 @@ export default function ExitStrategy() {
   })
   const [isLoadingWallet, setIsLoadingWallet] = useState<boolean>(false)
   const [walletError, setWalletError] = useState<string>('')
+  const [walletDataErrors, setWalletDataErrors] = useState<string[]>([])
+  const [walletDataWarnings, setWalletDataWarnings] = useState<string[]>([])
   const [walletPortfolioData, setWalletPortfolioData] = useState<Awaited<ReturnType<typeof fetchWalletPortfolio>> | null>(null)
 
   // Target MCAP for custom exit strategies
@@ -472,6 +474,8 @@ export default function ExitStrategy() {
     }
 
     setWalletError('')
+    setWalletDataErrors([])
+    setWalletDataWarnings([])
     setIsLoadingWallet(true)
 
     try {
@@ -491,6 +495,10 @@ export default function ExitStrategy() {
         setIsLoadingWallet(false)
         return
       }
+
+      // Capture errors and warnings from portfolio calculation
+      setWalletDataErrors(portfolioData.errors || [])
+      setWalletDataWarnings(portfolioData.warnings || [])
 
       // Auto-populate holdings and avgEntry
       setHoldings(portfolioData.totalTokens.toFixed(0))
@@ -651,6 +659,37 @@ export default function ExitStrategy() {
               {walletError && (
                 <div className="mt-2 text-xs text-red-400">{walletError}</div>
               )}
+              
+              {/* Data Quality Warnings */}
+              {walletDataWarnings.length > 0 && (
+                <div className="mt-2 p-2 bg-yellow-900/20 border border-yellow-700/30 rounded text-xs">
+                  <div className="font-semibold text-yellow-400 mb-1">⚠️ Data Quality Warnings ({walletDataWarnings.length})</div>
+                  <div className="text-yellow-300/80 space-y-1 max-h-32 overflow-y-auto">
+                    {walletDataWarnings.slice(0, 3).map((warning, i) => (
+                      <div key={i}>• {warning}</div>
+                    ))}
+                    {walletDataWarnings.length > 3 && (
+                      <div className="text-yellow-400/60 italic">+ {walletDataWarnings.length - 3} more (check console)</div>
+                    )}
+                  </div>
+                </div>
+              )}
+              
+              {/* Calculation Errors */}
+              {walletDataErrors.length > 0 && (
+                <div className="mt-2 p-2 bg-red-900/20 border border-red-700/30 rounded text-xs">
+                  <div className="font-semibold text-red-400 mb-1">❌ Calculation Errors ({walletDataErrors.length})</div>
+                  <div className="text-red-300/80 space-y-1 max-h-32 overflow-y-auto">
+                    {walletDataErrors.slice(0, 3).map((error, i) => (
+                      <div key={i}>• {error}</div>
+                    ))}
+                    {walletDataErrors.length > 3 && (
+                      <div className="text-red-400/60 italic">+ {walletDataErrors.length - 3} more (check console)</div>
+                    )}
+                  </div>
+                </div>
+              )}
+              
               <div className="mt-2 text-xs text-gray-600">
                 Fetches your on-chain data for {selectedCoin.symbol} from Etherscan
               </div>
