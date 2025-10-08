@@ -432,6 +432,7 @@ async function fetchHistoricalETHPriceFromCoinGecko(
 /**
  * Batch fetch historical ETH prices for multiple dates
  * Checks localStorage cache first, only fetches missing dates
+ * For same-day transactions, uses current ETH price instead of historical API
  * 
  * @param timestamps - Array of Unix timestamps
  * @returns Map of YYYY-MM-DD -> price
@@ -440,6 +441,13 @@ async function batchFetchHistoricalETHPrices(
   timestamps: number[]
 ): Promise<Map<string, number>> {
   const priceMap = new Map<string, number>()
+  
+  // Get today's date for comparison
+  const today = new Date()
+  const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
+  
+  // Fetch current ETH price once for all same-day transactions
+  let currentETHPrice: number | null = null
   
   // Extract unique dates
   const uniqueDates = new Set<string>()
@@ -475,12 +483,28 @@ async function batchFetchHistoricalETHPrices(
   console.log(`💾 Cache hits: ${cacheHits}/${uniqueDates.size}`)
   
   if (datesToFetch.length > 0) {
-    console.log(`🌐 Fetching ${datesToFetch.length} prices from CoinGecko...`)
+    console.log(`🌐 Fetching ${datesToFetch.length} prices...`)
     
     // Fetch missing dates with delays
     for (let i = 0; i < datesToFetch.length; i++) {
       const dateKey = datesToFetch[i]
       const date = new Date(dateToTimestamp.get(dateKey)! * 1000)
+      
+      // If this is today's date, use current ETH price instead of historical API
+      if (dateKey === todayKey) {
+        if (currentETHPrice === null) {
+          console.log(`  🔴 ${dateKey} is TODAY - fetching current ETH price...`)
+          const { fetchETHPrice } = await import('./api')
+          currentETHPrice = await fetchETHPrice()
+          if (!currentETHPrice) {
+            currentETHPrice = 4500 // Fallback if API fails
+          }
+        }
+        priceMap.set(dateKey, currentETHPrice)
+        setETHPriceInCache(dateKey, currentETHPrice)
+        console.log(`  ✅ ${dateKey} (TODAY): $${currentETHPrice.toFixed(2)}`)
+        continue
+      }
       
       // Convert to CoinGecko format (DD-MM-YYYY)
       const day = String(date.getDate()).padStart(2, '0')
@@ -497,8 +521,17 @@ async function batchFetchHistoricalETHPrices(
         setETHPriceInCache(dateKey, price)
         console.log(`  ✅ ${dateKey}: $${price.toFixed(2)}`)
       } else {
-        console.warn(`  ❌ ${dateKey}: Failed to fetch, using fallback`)
-        priceMap.set(dateKey, 2400) // Fallback
+        console.warn(`  ❌ ${dateKey}: Failed to fetch, using current price as fallback`)
+        // Use current ETH price as fallback instead of hardcoded $2400
+        if (currentETHPrice === null) {
+          const { fetchETHPrice } = await import('./api')
+          currentETHPrice = await fetchETHPrice()
+          if (!currentETHPrice) {
+            currentETHPrice = 4500 // Ultimate fallback
+          }
+        }
+        priceMap.set(dateKey, currentETHPrice)
+        setETHPriceInCache(dateKey, currentETHPrice)
       }
       
       // Rate limiting: wait 1.5 seconds between calls (except last one)
@@ -533,8 +566,8 @@ function getETHPriceAtTimestamp(
     return price
   }
   
-  console.warn(`No ETH price found for ${dateKey}, using fallback`)
-  return 2400 // Fallback
+  console.warn(`No ETH price found for ${dateKey}, using current price fallback (~$4500)`)
+  return 4500 // Fallback to current ETH price range
 }
 
 /**
