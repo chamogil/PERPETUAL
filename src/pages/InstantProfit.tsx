@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
-import { fetchCoinOverview, fetchDexByTokenAddress, type DexPair } from '../api'
+import { fetchCoinOverview, fetchDexByTokenAddress } from '../api'
 import { fetchWalletPortfolio, fetchTokenSupply, type WalletPortfolioData } from '../etherscan'
 
 // Token info interface
@@ -113,15 +113,6 @@ function loadSavedTokenInfo(): TokenInfo | null {
   return saved ? JSON.parse(saved) : null
 }
 
-function formatNumber(value: number): string {
-  if (value >= 1_000_000) {
-    return `${(value / 1_000_000).toFixed(2)}M`
-  }
-  if (value >= 1_000) {
-    return `${(value / 1_000).toFixed(2)}K`
-  }
-  return value.toFixed(0)
-}
 
 export default function InstantProfit() {
   // Token state
@@ -267,21 +258,25 @@ export default function InstantProfit() {
     try {
       const portfolio = await fetchWalletPortfolio(walletAddress, tokenInfo.address)
       
-      setWalletData(portfolio)
-      setWalletDataErrors(portfolio.errors)
-      setWalletDataWarnings(portfolio.warnings)
-      
-      // Cache the wallet data
-      setCachedWalletData(walletAddress, tokenInfo.address, portfolio)
-      
-      localStorage.setItem(STORAGE_KEY_WALLET_ADDRESS, walletAddress)
-      
-      console.log('Wallet loaded and cached:', {
-        token: tokenInfo.symbol,
-        holdings: portfolio.totalTokens,
-        avgEntry: portfolio.avgEntryPrice,
-        invested: portfolio.totalInvestedUSD
-      })
+      if (portfolio) {
+        setWalletData(portfolio)
+        setWalletDataErrors(portfolio.errors)
+        setWalletDataWarnings(portfolio.warnings)
+        
+        // Cache the wallet data
+        setCachedWalletData(walletAddress, tokenInfo.address, portfolio)
+        
+        localStorage.setItem(STORAGE_KEY_WALLET_ADDRESS, walletAddress)
+        
+        console.log('Wallet loaded and cached:', {
+          token: tokenInfo.symbol,
+          holdings: portfolio.totalTokens,
+          avgEntry: portfolio.avgEntryPrice,
+          invested: portfolio.totalInvestedUSD
+        })
+      } else {
+        setWalletError('No transaction data found for this wallet and token.')
+      }
     } catch (error) {
       console.error('Error loading wallet:', error)
       setWalletError('Failed to load wallet data. Please check the address and try again.')
@@ -437,7 +432,9 @@ export default function InstantProfit() {
       setIsUpdatingPrice(true)
       
       try {
-        const overview = await fetchCoinOverview(tokenInfo.address)
+        if (!tokenInfo) return
+      
+      const overview = await fetchCoinOverview(tokenInfo.address)
         
         if (!isCancelled) {
           setCurrentPrice(overview.price)
