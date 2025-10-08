@@ -13,6 +13,11 @@ type MetricsData = {
     totalSupply: number
     circulatingSupply: number
     burned: number
+    ath: {
+      price: number
+      date: string
+      changePercentage: number
+    } | null
   } | null
 }
 
@@ -157,7 +162,7 @@ export default function AllMetrics() {
                 {!pair ? (
                   <div className="text-center py-16 text-gray-500 uppercase tracking-wider">No trading data available</div>
                 ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
                     {/* Market Metrics */}
                     <div className="space-y-4 bg-black/40 p-6 rounded-lg border border-gray-800">
                       <h3 className="text-xs font-bold uppercase text-gray-500 tracking-wider mb-4">Market Metrics</h3>
@@ -213,6 +218,41 @@ export default function AllMetrics() {
                         </div>
                       ) : (
                         <div className="text-sm text-gray-600">Loading supply data...</div>
+                      )}
+                    </div>
+                    
+                    {/* ATH Metrics */}
+                    <div className="space-y-4 bg-black/40 p-6 rounded-lg border border-gray-800">
+                      <h3 className="text-xs font-bold uppercase text-gray-500 tracking-wider mb-4">All-Time High</h3>
+                      {supply?.ath ? (
+                        <div className="space-y-3">
+                          <div>
+                            <div className="text-xs text-gray-600 uppercase tracking-wider mb-1">ATH Price</div>
+                            <div className="text-lg font-bold text-white">
+                              ${supply.ath.price.toFixed(supply.ath.price < 0.01 ? 6 : 4)}
+                            </div>
+                          </div>
+                          <div>
+                            <div className="text-xs text-gray-600 uppercase tracking-wider mb-1">ATH Date</div>
+                            <div className="text-sm text-gray-400">
+                              {new Date(supply.ath.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                            </div>
+                          </div>
+                          <div>
+                            <div className="text-xs text-gray-600 uppercase tracking-wider mb-1">From ATH</div>
+                            <div className={`text-lg font-bold ${supply.ath.changePercentage >= -5 ? 'text-green-400' : 'text-red-400'}`}>
+                              {supply.ath.changePercentage.toFixed(2)}%
+                            </div>
+                          </div>
+                          <div>
+                            <div className="text-xs text-gray-600 uppercase tracking-wider mb-1">ATH Market Cap</div>
+                            <div className="text-sm text-gray-400">
+                              {formatNumber(supply.ath.price * supply.totalSupply)}
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-sm text-gray-600">Loading ATH data...</div>
                       )}
                     </div>
 

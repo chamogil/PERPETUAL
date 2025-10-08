@@ -125,6 +125,11 @@ export default function InstantProfit() {
     totalSupply: number
     circulatingSupply: number
     burned: number
+    ath: {
+      price: number
+      date: string
+      changePercentage: number
+    } | null
   } | null>(null)
 
   // Entry mode state

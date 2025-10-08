@@ -254,6 +254,11 @@ export default function ExitStrategy() {
     totalSupply: number
     circulatingSupply: number
     burned: number
+    ath: {
+      price: number
+      date: string
+      changePercentage: number
+    } | null
   } | null>(null)
   const [txns24h, setTxns24h] = useState<number | null>(null)
   const [buys24h, setBuys24h] = useState<number | null>(null)
@@ -832,6 +837,42 @@ export default function ExitStrategy() {
                 <div className="text-xs text-gray-500 mb-2">
                   Ultimate Exit Target (Optional)
                 </div>
+                
+                {/* ATH Info Display */}
+                {tokenSupply?.ath && (
+                  <div className="mb-3 p-3 bg-gray-900/50 border border-gray-800 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-xs text-gray-500 mb-1">All-Time High</div>
+                        <div className="text-sm font-bold text-white">
+                          ${tokenSupply.ath.price.toFixed(tokenSupply.ath.price < 0.01 ? 6 : 4)} → {formatCompact((tokenSupply.ath.price * tokenSupply.totalSupply))} MCAP
+                        </div>
+                        <div className="text-xs text-gray-600 mt-1">
+                          {new Date(tokenSupply.ath.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                          <span className={`ml-2 ${tokenSupply.ath.changePercentage >= -5 ? 'text-green-400' : 'text-red-400'}`}>
+                            ({tokenSupply.ath.changePercentage.toFixed(1)}% from ATH)
+                          </span>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => {
+                          const athMcap = tokenSupply.ath!.price * tokenSupply.totalSupply
+                          if (athMcap >= 1_000_000_000) {
+                            setTargetMcapValue((athMcap / 1_000_000_000).toFixed(0))
+                            setTargetMcapUnit('billion')
+                          } else {
+                            setTargetMcapValue((athMcap / 1_000_000).toFixed(0))
+                            setTargetMcapUnit('million')
+                          }
+                        }}
+                        className="px-3 py-2 bg-white/10 hover:bg-white/20 border border-gray-700 rounded text-xs font-semibold text-white uppercase tracking-wider transition-colors"
+                      >
+                        ↑ Use ATH MCAP
+                      </button>
+                    </div>
+                  </div>
+                )}
+                
                 <div className="flex gap-2 items-center">
                   <input
                     type="number"

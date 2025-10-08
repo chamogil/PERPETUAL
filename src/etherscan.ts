@@ -86,14 +86,19 @@ export type WalletPortfolioData = {
 }
 
 /**
- * Fetch token supply information from CoinGecko
- * Returns max supply, current total supply (after burns), circulating supply
+ * Fetch token supply information and ATH data from CoinGecko
+ * Returns max supply, current total supply (after burns), circulating supply, and ATH info
  */
 export async function fetchTokenSupply(tokenAddress: string): Promise<{
   maxSupply: number
   totalSupply: number
   circulatingSupply: number
   burned: number
+  ath: {
+    price: number
+    date: string
+    changePercentage: number
+  } | null
 } | null> {
   try {
     const url = `https://api.coingecko.com/api/v3/coins/ethereum/contract/${tokenAddress.toLowerCase()}`
@@ -113,13 +118,24 @@ export async function fetchTokenSupply(tokenAddress: string): Promise<{
     const circulatingSupply = data.market_data?.circulating_supply || 0
     const burned = maxSupply > 0 ? maxSupply - totalSupply : 0
     
+    // Extract ATH data
+    const ath = data.market_data?.ath?.usd && data.market_data?.ath_date?.usd ? {
+      price: data.market_data.ath.usd,
+      date: data.market_data.ath_date.usd,
+      changePercentage: data.market_data.ath_change_percentage?.usd || 0
+    } : null
+    
     console.log(`Token Supply - Max: ${maxSupply.toLocaleString()}, Total: ${totalSupply.toLocaleString()}, Circulating: ${circulatingSupply.toLocaleString()}, Burned: ${burned.toLocaleString()}`)
+    if (ath) {
+      console.log(`ATH - Price: $${ath.price}, Date: ${ath.date}, Change: ${ath.changePercentage.toFixed(2)}%`)
+    }
     
     return {
       maxSupply,
       totalSupply,
       circulatingSupply,
-      burned
+      burned,
+      ath
     }
   } catch (error) {
     console.error('Error fetching token supply from CoinGecko:', error)
