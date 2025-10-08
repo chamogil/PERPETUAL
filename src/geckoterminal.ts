@@ -49,6 +49,11 @@ const POOL_CONFIG: Record<string, { symbol: string; poolId: string; launchDate: 
     poolId: '0x854b75d54826bb26569d2b1184583a5c6a7a2407912f8386b0c10d7232b22e5b',
     launchDate: '2025-10-07T16:00:00Z',
   },
+  '0x2090dc81f42f6ddd8deace0d3c3339017417b0dc': {
+    symbol: 'CHKSTR',
+    poolId: '0x5506e13cbfea7c46fccf8ff414cf34d58191c094beb485306a390ea13fbb940b',
+    launchDate: '2025-10-08T16:00:11Z',
+  },
 }
 
 // TypeScript interfaces
