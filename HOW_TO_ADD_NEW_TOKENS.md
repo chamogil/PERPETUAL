@@ -4,6 +4,14 @@
 **Last Updated:** October 8, 2025  
 **Difficulty:** Intermediate (requires API calls, data transformation, TypeScript)
 
+> **📁 Documentation Organization:**  
+> This repository keeps documentation minimal and focused:
+> - `README.md` - Project overview and features
+> - `HOW_TO_ADD_NEW_TOKENS.md` - This guide (token addition process)
+> - `LAUNCH_STRATEGY_HELP.md` - User help for Launch Strategy Planner
+> 
+> Investigation/work docs are removed after completion to keep the repo clean.
+
 ---
 
 ## 🎯 **OVERVIEW**

@@ -207,26 +207,14 @@ All on **Ethereum** mainnet.
 
 ## ➕ How to Add New Strategies (When They Launch)
 
-**⚠️ IMPORTANT: This is a MANUAL process - No automatic detection**
+### Quick Start (2 minutes)
 
-When a new strategy launches on nftstrategy.fun, follow these steps:
-
-### Step 1: Get New Token Info
-From nftstrategy.fun or Etherscan, collect:
-- Token name (e.g., "DoodzStrategy")
-- Symbol (e.g., "DOODZSTR")
-- Contract address (e.g., "0x...")
-- Decimals (usually 18)
-
-### Step 2: Update Coin List
 **File:** `src/components/StrategyOverview.tsx`
 
 Add new entry to the `COINS` array:
 
 ```typescript
 const COINS: CoinConfig[] = [
-  { id: 'pnkstr', name: 'PunkStrategy', symbol: 'PNKSTR', address: '0xc50673edb3a7b94e8cad8a7d4e0cd68864e33edf' },
-  { id: 'pudgystr', name: 'PudgyStrategy', symbol: 'PUDGYSTR', address: '0xb3d6e9e142a785ea8a4f0050fee73bcc3438c5c5' },
   // ... existing coins ...
   
   // ADD NEW COIN HERE:
@@ -234,32 +222,26 @@ const COINS: CoinConfig[] = [
 ]
 ```
 
-**That's it!** The new strategy will:
-- ✅ Appear in All Strategies overview
-- ✅ Be selectable in coin dropdown
-- ✅ Fetch live data from DexScreener
-- ✅ Work with all features (portfolio, exit calculator)
+**That's it!** Test locally, then deploy.
 
-### Step 3: Test & Deploy
-```bash
-# Test locally
-npm run dev
-# Verify new coin shows up
+### Historical Data for Launch Simulator
 
-# Deploy
-git add .
-git commit -m "Add DoodzStrategy"
-git push
-# Auto-deploys on Vercel
-```
+**For tokens to appear in "Historical Mode" of the Launch Simulator**, you need to add 90 minutes of launch data.
 
-### Why No Automation?
-- DexScreener API doesn't filter by "nftstrategy.fun" tokens
-- No on-chain registry of all strategies
-- Manual verification ensures quality (real tokens only)
-- Prevents scam tokens from appearing
+**📚 Complete Guide:** See `HOW_TO_ADD_NEW_TOKENS.md` for detailed step-by-step instructions:
+- Fetch OHLCV data from GeckoTerminal API
+- Transform data with market cap calculations
+- Add pool configuration and historical data
+- Takes ~30 minutes per token
 
-**Estimated time to add new strategy: ~2 minutes**
+### Documentation Structure
+
+This repository keeps documentation clean and focused:
+- 📖 `README.md` - This file (project overview)
+- 🚀 `HOW_TO_ADD_NEW_TOKENS.md` - Complete token addition guide
+- 📋 `LAUNCH_STRATEGY_HELP.md` - User help for Launch Strategy Planner
+
+*Investigation/work docs are removed after completion.*
 
 ---
 
@@ -619,63 +601,13 @@ git push
 
 ## 📝 Maintenance & Updates
 
-### Adding New Strategies (Manual Process)
+### Adding New Strategies
 
-**⚠️ No Automatic Detection** - You must manually add new tokens
+**Quick Reference:** See "How to Add New Strategies" section above for complete instructions.
 
-**When a new strategy launches on nftstrategy.fun:**
-
-**Step 1: Gather Token Information**
-From nftstrategy.fun or Etherscan:
-- Token name (e.g., "MiladyStrategy")
-- Symbol (e.g., "MILADYSTR")
-- Contract address (e.g., "0x...")
-- Chain: Ethereum (all strategies are on Ethereum)
-
-**Step 2: Update COINS Array**
-
-Open: `src/components/StrategyOverview.tsx`
-
-Add new entry:
-```typescript
-const COINS: CoinConfig[] = [
-  // Existing coins...
-  { id: 'pnkstr', name: 'PunkStrategy', symbol: 'PNKSTR', address: '0xc50673edb3a7b94e8cad8a7d4e0cd68864e33edf' },
-  { id: 'pudgystr', name: 'PudgyStrategy', symbol: 'PUDGYSTR', address: '0xb3d6e9e142a785ea8a4f0050fee73bcc3438c5c5' },
-  { id: 'apestr', name: 'ApeStrategy', symbol: 'APESTR', address: '0x9ebf91b8d6ff68aa05545301a3d0984eaee54a03' },
-  { id: 'toadstr', name: 'ToadzStrategy', symbol: 'TOADSTR', address: '0x92cedfdbce6e87b595e4a529afa2905480368af4' },
-  { id: 'birbstr', name: 'BirbStrategy', symbol: 'BIRBSTR', address: '0x6bcba7cd81a5f12c10ca1bf9b36761cc382658e8' },
-  { id: 'squigstr', name: 'SquiggleStrategy', symbol: 'SQUIGSTR', address: '0x742fd09cbbeb1ec4e3d6404dfc959a324deb50e6' },
-  
-  // NEW STRATEGY - Add here:
-  { id: 'miladystr', name: 'MiladyStrategy', symbol: 'MILADYSTR', address: '0xNEW_CONTRACT_ADDRESS_HERE' },
-]
-```
-
-**Step 3: Test Locally**
-```bash
-npm run dev
-# Check new strategy appears in overview
-# Select it in dropdown
-# Verify data loads from DexScreener
-```
-
-**Step 4: Deploy**
-```bash
-git add .
-git commit -m "Add MiladyStrategy"
-git push
-# Auto-deploys to Vercel
-```
-
-**Time Required:** ~2-3 minutes per new strategy
-
-### Why Manual?
-- ✅ **Quality control** - Verify it's a real nftstrategy.fun token
-- ✅ **No scams** - Prevent malicious tokens
-- ✅ **Intentional** - Only add verified strategies
-- ❌ **No API to auto-detect** - DexScreener doesn't filter by source
-- ❌ **No on-chain registry** - nftstrategy.fun tokens not tagged
+**TL;DR:**
+1. Add token to `src/components/StrategyOverview.tsx` (2 minutes)
+2. For Launch Simulator historical data: See `HOW_TO_ADD_NEW_TOKENS.md` (30 minutes)
 
 ---
 
@@ -1030,13 +962,21 @@ Helps maintain and improve the tool.
 
 ## 🎯 Key Files Reference
 
+### Documentation
+- `README.md` - This file (project overview & quick start)
+- `HOW_TO_ADD_NEW_TOKENS.md` - Complete guide for adding tokens with historical data
+- `LAUNCH_STRATEGY_HELP.md` - User help for Launch Strategy Planner
+
 ### Core Logic
 - `src/api.ts` - DexScreener API integration
+- `src/etherscan.ts` - Etherscan API for wallet portfolio loading
 - `src/pages/LaunchSimulator.tsx` - Tax & ROI calculations
 - `src/pages/ExitStrategy.tsx` - Exit planning logic
 
 ### Data Configuration
 - `src/components/StrategyOverview.tsx` - **COINS array** (add new strategies here)
+- `src/geckoterminal.ts` - Pool configuration for historical data
+- `src/historicalData.ts` - Hardcoded 90-minute launch data
 - `src/lib.d.ts` - TypeScript types for API
 
 ### Styling
