@@ -25,8 +25,9 @@ function formatNumber(value: number): string {
   return new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 }).format(value)
 }
 
-function calculateTax(minute: number): number {
-  return Math.max(10, 95 - minute)
+function calculateMinuteFromTax(tax: number): number {
+  // Approximate minute based on tax rate (for historical mode mapping)
+  return Math.max(0, 95 - tax)
 }
 
 export default function LaunchSimulator() {
@@ -41,7 +42,7 @@ export default function LaunchSimulator() {
   const [isLoadingData, setIsLoadingData] = useState(false)
   const [dataError, setDataError] = useState<string | null>(null)
   
-  const [entryMinute, setEntryMinute] = useState(30)
+  const [taxRate, setTaxRate] = useState(65) // Default 65% tax
   const [entryMarketCap, setEntryMarketCap] = useState(200000) // $200K default
   const [exitMarketCap, setExitMarketCap] = useState(5000000) // $5M default
   const [investment, setInvestment] = useState('1000')
@@ -97,8 +98,10 @@ export default function LaunchSimulator() {
   }
 
   const investmentNum = Number(investment) || 0
-  const taxRate = calculateTax(entryMinute)
   const SELL_TAX = 0.10 // 10% sell tax on all nftstrategy.fun tokens
+  
+  // Calculate entry minute from tax rate (for historical mode)
+  const entryMinute = calculateMinuteFromTax(taxRate)
   
   // Helper: Get data point for a specific minute (data is now filled with no gaps)
   const getDataPointForMinute = (minute: number) => {
@@ -108,7 +111,7 @@ export default function LaunchSimulator() {
   }
   
   // Calculate actual entry market cap based on mode
-  // In historical mode: use real data from selected minute
+  // In historical mode: use real data from selected minute (derived from tax)
   // In simulation mode: use slider value
   const actualEntryMarketCap = mode === 'historical' && historicalData
     ? (getDataPointForMinute(entryMinute)?.marketCap ?? entryMarketCap)
@@ -226,28 +229,30 @@ export default function LaunchSimulator() {
 
         {/* Three Sliders + Investment */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          {/* Slider 1: Entry Minute */}
+          {/* Slider 1: Tax Rate */}
           <div className="glass-card border-punk rounded-lg p-6">
             <label className="block mb-4">
-              <div className="text-xs text-gray-500 uppercase tracking-wider mb-2">Entry Minute</div>
-              <div className="text-3xl font-bold mb-4">{entryMinute} min</div>
+              <div className="text-xs text-gray-500 uppercase tracking-wider mb-2">Buy Tax Rate</div>
+              <div className={`text-3xl font-bold mb-4 ${taxRate >= 70 ? 'text-red-500' : taxRate >= 30 ? 'text-yellow-500' : 'text-green-500'}`}>
+                {taxRate}%
+              </div>
               <input
                 type="range"
-                min="0"
-                max="89"
-                value={entryMinute}
-                onChange={(e) => setEntryMinute(Number(e.target.value))}
+                min="10"
+                max="99"
+                value={taxRate}
+                onChange={(e) => setTaxRate(Number(e.target.value))}
                 className="w-full h-2 bg-gray-800 rounded-lg appearance-none cursor-pointer"
               />
               <div className="flex justify-between text-xs text-gray-600 mt-2">
-                <span>0</span>
-                <span>89</span>
+                <span>10%</span>
+                <span>99%</span>
               </div>
             </label>
             <div className="mt-4 pt-4 border-t border-gray-800">
-              <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">Tax Rate</div>
-              <div className={`text-2xl font-bold ${taxRate >= 70 ? 'text-red-500' : taxRate >= 30 ? 'text-yellow-500' : 'text-green-500'}`}>
-                {taxRate}%
+              <div className="text-xs text-gray-500 uppercase tracking-wider mb-1">Approx. Entry Minute</div>
+              <div className="text-2xl font-bold">
+                ~{entryMinute} min
               </div>
             </div>
           </div>
@@ -404,7 +409,7 @@ export default function LaunchSimulator() {
           
           <div className="space-y-4">
             {[0, 15, 30, 45, 60, 75, 85].map((min) => {
-              const tax = calculateTax(min)
+              const tax = Math.max(10, 95 - min) // Calculate tax for this minute
               
               // Calculate entry MCAP for this minute
               // In historical mode: use real data from that minute

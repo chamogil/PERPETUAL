@@ -22,7 +22,7 @@ export default function Landing() {
       {/* Main Content */}
       <div className="max-w-[1200px] mx-auto px-6 pb-16">
         {/* Hero Cards Grid - PUNK & MINIMAL */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
           {/* Launch Simulator Card */}
           <Link to="/launch-simulator" className="block group">
             <div className="border-punk glass-card rounded-lg p-10 h-full hover-lift hover-border transition-all duration-300">
@@ -53,49 +53,6 @@ export default function Landing() {
                     <span className="text-xs text-gray-400 uppercase tracking-wide">Scenario Comparison</span>
                   </li>
                 </ul>
-                
-                <button className="btn-punk w-full">
-                  Enter →
-                </button>
-              </div>
-            </div>
-          </Link>
-
-          {/* Launch Strategy Planner Card */}
-          <Link to="/launch-strategy-planner" className="block group">
-            <div className="border-punk glass-card rounded-lg p-10 h-full hover-lift hover-border transition-all duration-300">
-              <div className="flex flex-col h-full">
-                <h2 className="text-3xl font-black mb-5 text-white uppercase tracking-tight">
-                  $VIBESTR LAUNCH SIMULATOR
-                </h2>
-                
-                <p className="text-gray-500 mb-8 text-sm leading-relaxed">
-                  Plan multiple entries with real-time tracking and comprehensive exports
-                </p>
-                
-                <ul className="space-y-4 mb-10 flex-grow">
-                  <li className="flex items-start gap-3">
-                    <span className="text-white font-bold">—</span>
-                    <span className="text-xs text-gray-400 uppercase tracking-wide">Multi-Entry Recording</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="text-white font-bold">—</span>
-                    <span className="text-xs text-gray-400 uppercase tracking-wide">Manual & Live Modes</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="text-white font-bold">—</span>
-                    <span className="text-xs text-gray-400 uppercase tracking-wide">CSV & HTML Export</span>
-                  </li>
-                  <li className="flex items-start gap-3">
-                    <span className="text-white font-bold">—</span>
-                    <span className="text-xs text-gray-400 uppercase tracking-wide">Entry Editing System</span>
-                  </li>
-                </ul>
-                
-                <div className="mb-4 text-xs text-gray-500 flex items-center gap-2">
-                  <span>💻</span>
-                  <span>Model developed by <a href="https://x.com/Gabo_Anany" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 transition-colors" onClick={(e) => e.stopPropagation()}>@Gabo_Anany</a></span>
-                </div>
                 
                 <button className="btn-punk w-full">
                   Enter →
