@@ -412,7 +412,7 @@ export default function LaunchSimulator() {
               const tax = Math.max(10, 95 - min) // Calculate tax for this minute
               
               // Calculate entry MCAP for this minute
-              // In historical mode: use real data from that minute
+              // In historical mode: use REAL data from that minute
               // In simulation mode: use same entry MCAP as main calculation
               const entryMcapForMin = mode === 'historical' && historicalData
                 ? (getDataPointForMinute(min)?.marketCap ?? entryMarketCap)
@@ -435,7 +435,12 @@ export default function LaunchSimulator() {
                 >
                   <div className="flex items-center gap-4">
                     <div className="text-sm font-bold w-20">Min {min}</div>
-                    <div className="text-xs text-gray-500">({tax}% tax)</div>
+                    <div className="text-xs text-gray-500">
+                      {mode === 'historical' && historicalData 
+                        ? `(${formatCompact(entryMcapForMin)} MCAP)`
+                        : `(${tax}% tax)`
+                      }
+                    </div>
                   </div>
                   <div className={`text-lg font-bold ${r >= 0 ? 'text-green-500' : 'text-red-500'}`}>
                     {r >= 0 ? '+' : ''}{r.toFixed(0)}% ROI
