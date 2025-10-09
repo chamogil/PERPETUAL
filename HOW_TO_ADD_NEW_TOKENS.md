@@ -164,13 +164,13 @@ const transformedData = ohlcvList.map((entry, index) => {
   };
 });
 
-// Output as JavaScript array
+// Output as JavaScript array with proper 4-space indentation
 console.log(`'[TOKEN_SYMBOL]': [`);
 transformedData.forEach((data, i) => {
   const comma = i < transformedData.length - 1 ? ',' : '';
-  console.log(`  { minute: ${data.minute}, timestamp: ${data.timestamp}, open: ${data.open}, high: ${data.high}, low: ${data.low}, close: ${data.close}, volume: ${data.volume}, marketCap: ${data.marketCap} }${comma}`);
+  console.log(`    { minute: ${data.minute}, timestamp: ${data.timestamp}, open: ${data.open}, high: ${data.high}, low: ${data.low}, close: ${data.close}, volume: ${data.volume}, marketCap: ${data.marketCap} }${comma}`);
 });
-console.log(`],`);
+console.log(`  ],`);
 
 // Also log some stats
 console.log('\n\n=== STATS ===');
