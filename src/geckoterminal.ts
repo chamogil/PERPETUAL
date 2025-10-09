@@ -54,6 +54,11 @@ const POOL_CONFIG: Record<string, { symbol: string; poolId: string; launchDate: 
     poolId: '0x5506e13cbfea7c46fccf8ff414cf34d58191c094beb485306a390ea13fbb940b',
     launchDate: '2025-10-08T16:00:11Z',
   },
+  '0xd0cc2b0efb168bfe1f94a948d8df70fa10257196': {
+    symbol: 'VIBESTR',
+    poolId: '0x56c8fc0c410ec0778484600246847e2e77c428f888a35a11351dc12bbff09c6d',
+    launchDate: '2025-10-09T16:00:11Z',
+  },
 }
 
 // TypeScript interfaces

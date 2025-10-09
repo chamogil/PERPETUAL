@@ -33,6 +33,7 @@ const STRATEGY_TOKENS = [
   { symbol: 'APESTR', name: 'ApeStrategy', address: '0x9ebf91b8d6ff68aa05545301a3d0984eaee54a03' },
   { symbol: 'PUDGYSTR', name: 'PudgyStrategy', address: '0xb3d6e9e142a785ea8a4f0050fee73bcc3438c5c5' },
   { symbol: 'CHKSTR', name: 'CheckStrategy', address: '0x2090dc81f42f6ddd8deace0d3c3339017417b0dc' },
+  { symbol: 'VIBESTR', name: 'VibeStrategy', address: '0xd0cc2b0efb168bfe1f94a948d8df70fa10257196' },
 ]
 
 // localStorage keys

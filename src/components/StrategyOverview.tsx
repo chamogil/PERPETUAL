@@ -19,6 +19,7 @@ const COINS: CoinConfig[] = [
   { id: 'gobstr', name: 'Gobstrategy', symbol: 'GOBSTR', address: '0x5d855d8a3090243fed9bf73999eedfbc2d1dcf21' },
   { id: 'painstr', name: 'PainStrategy', symbol: 'PAINSTR', address: '0xdfc3af477979912ec90b138d3e5552d5304c5663' },
   { id: 'chkstr', name: 'CheckStrategy', symbol: 'CHKSTR', address: '0x2090dc81f42f6ddd8deace0d3c3339017417b0dc' },
+  { id: 'vibestr', name: 'VibeStrategy', symbol: 'VIBESTR', address: '0xd0cc2b0efb168bfe1f94a948d8df70fa10257196' },
 ]
 
 function formatCompact(value: number): string {
